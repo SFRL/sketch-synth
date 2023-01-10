@@ -1,0 +1,102 @@
+@import "font.css";
+
+:root {
+    --header-height: 80px;
+}
+
+header {
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    height: var(--header-height);
+    width: 100%;
+    background-color: white;
+    border-bottom: 3px black solid;
+    z-index: 1000;
+}
+
+main {
+    display: block;
+}
+
+main > section {
+    box-sizing: border-box;
+    padding: 2rem;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 20px;
+}
+
+main button {
+    margin: 1rem 0 0 0;
+}
+
+/* handle images in figure */
+figure {
+    display: inline-block;
+    margin: 0;
+}
+figcaption {
+    font-size: 1rem;
+    font-style: italic;
+}
+
+.indented {
+    padding-left: 3rem;
+}
+
+/* Alert box */
+.alert {
+    text-align: center;
+    border: 5px solid red;
+    padding: 1rem;
+    font-size: 1.5rem;
+}
+
+/* Add logos to header */
+#MATLogo {
+    background-image: url(../img/logo.gif);
+    background-size: cover;
+    height: 100%;
+    width: var(--header-height);
+}
+
+#QMLogo {
+    height: 90%;
+    flex: 1 1 0;
+    margin-right: 1rem;
+    background-image: url("../img/QMLogo.png");
+    background-repeat: no-repeat;
+    background-size:contain;
+    /* background-attachment: fixed; */
+    background-position: right;
+}
+/* Change logo according to screen size */
+@media screen and (max-width: 1000px) {
+    #QMLogo {
+      background-image: url("../img/QMLogo_small.png");
+    }
+  }
+
+#headercontent {
+    margin: 0 1rem;
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+
+h1 {
+    font-family: 'StencilCreek-50', Helvetica, sans-serif;
+    font-weight: 100;
+    font-style: normal;
+    font-size: 40px;    
+}
+
+@media screen and (max-width: 600px) {
+    h1 {
+        font-size: 30px;
+    }
+    
+}
+

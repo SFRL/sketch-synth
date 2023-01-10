@@ -1,0 +1,36 @@
+@import "font.css";
+
+button {
+    font-family: 'StencilCreek-50';
+    font-weight: 100;
+    font-style: normal;
+    width: 100px;
+    height: 50px;
+    background-color: white;
+    border: 2px solid black;
+    color: black;
+    font-size: 25px;
+    line-height: 50px;
+    margin: 0 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+   
+button:hover {
+    width: 100px;
+    height: 50px;
+    line-height: 50px;
+    box-shadow: 5px 5px #666;
+    cursor: pointer;
+  }
+  
+button:active {
+    background-color: #666;
+    color: white;
+    width: 100px;
+    height: 50px;
+    line-height: 50px;
+    box-shadow: 5px 5px;
+  }
+  

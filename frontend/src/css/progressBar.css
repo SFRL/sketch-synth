@@ -1,0 +1,11 @@
+.progressBar {
+    position: fixed;
+    width: 30vw;
+    bottom: 1vh;
+    left: 35vw;
+    padding: 2px;
+    background-color: rgba(0,0,0,0.6);
+    box-shadow: 2px 2px 2px #000;
+    border-radius: 50px;
+    pointer-events: none;
+}
