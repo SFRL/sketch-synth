@@ -105,16 +105,20 @@ function P5Sketch(props) {
   // State whether instructions should fade or not
   const [fade, setFade] = useState(false);
   const [globalNoisiness, setGlobalNoisiness] = useState(0);
+  const [globalThinness, setGlobalThinness] = useState(0);
   const [predictionNumber, setPredictionNumber] = useState(0);
 
   const updatePredictions = useCallback(
-    (val) => {
+    (values) => {
       setGlobalNoisiness(
-        Math.min(Math.max(globalNoisiness + val, -12.3), 12.3)
+        Math.min(Math.max(globalNoisiness + 2 * (values[0] - 0.5), -12.3), 12.3)
+      );
+      setGlobalThinness(
+        Math.min(Math.max(globalThinness + 2 * (values[1] - 0.5), -12.3), 12.3)
       );
       setPredictionNumber(predictionNumber + 1);
     },
-    [setPredictionNumber, predictionNumber, setGlobalNoisiness, globalNoisiness]
+    [setPredictionNumber, predictionNumber, setGlobalNoisiness, globalNoisiness, setGlobalThinness, globalThinness]
   );
 
   useEffect(() => {
@@ -232,6 +236,7 @@ function P5Sketch(props) {
       <PredictionPanel
         sketch={props.sketch}
         globalNoisiness={globalNoisiness}
+        globalThinness={globalThinness}
         predictionNumber={predictionNumber}
         callback={updatePredictions}
       />

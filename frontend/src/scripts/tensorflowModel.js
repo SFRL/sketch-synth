@@ -105,13 +105,15 @@ const makePrediction = async (sketch, returnCanvas) => {
 
   // const firsttime = Date.now();
 
-  const prediction = await model.predict(preprocessed).data();
+  const [out1,out2] = model.predict(preprocessed);
+  const noisyCalm = await out1.data();
+  const thinThick = await out2.data(); 
 
   // console.log(`Time difference is: ${Date.now() - firsttime}`);
   // .then((result) => result.value)
   // .catch((error) => console.log(error));
 
-  return prediction;
+  return [noisyCalm[0],thinThick[0]];
 };
 
 export { loadModel, makePrediction };
