@@ -1,15 +1,10 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect} from "react";
 import { debounce } from "lodash";
-import Layout from "../components/Layout";
 import P5Sketch from "../components/P5Sketch";
 import { Sketch } from "../scripts/sketchClasses";
-import APIService from "../scripts/APIService";
-import { USER_ID, mode } from "../scripts/init";
 
 import "../css/layout.css";
 import "../css/button.css";
-import PlayInPopup from "../pages/PlayInPopup";
-import { SettingsInputAntennaTwoTone } from "@material-ui/icons";
 
 function DrawingInterface(props) {
   // State that is mainly used to force p5 sketch to rerender if participant clicks reset or changes screen size,
@@ -20,28 +15,6 @@ function DrawingInterface(props) {
   const [sketch, setSketch] = useState(new Sketch());
   const [allowPrediction, setAllowPrediction] = useState(false);
   const [prediction, setPrediction] = useState(0.5);
-
-  // Callback to submit rating, hide popup again and reset sketch
-  const hidePopup = useCallback(
-    (rating) => {
-      // Display loading popup
-      setPopup(<PlayInPopup callback={hidePopup} />);
-      const data = {
-        id: USER_ID,
-        descriptor: props.instructions,
-        rating: rating,
-      };
-
-      APIService.SendData(data, "rating")
-        .then((response) => {
-          setPopup("");
-          setSketch(new Sketch());
-          props.callback();
-        })
-        .catch((error) => console.log(error));
-    },
-    [setPopup, props]
-  );
 
   useEffect(() => {
     // Re-render sketch when window size is changed, use debounce to prevent triggering too many re-renders

@@ -54,30 +54,6 @@ figcaption {
     font-size: 1.5rem;
 }
 
-/* Add logos to header */
-#MATLogo {
-    background-image: url(../img/logo.gif);
-    background-size: cover;
-    height: 100%;
-    width: var(--header-height);
-}
-
-#QMLogo {
-    height: 90%;
-    flex: 1 1 0;
-    margin-right: 1rem;
-    background-image: url("../img/QMLogo.png");
-    background-repeat: no-repeat;
-    background-size:contain;
-    /* background-attachment: fixed; */
-    background-position: right;
-}
-/* Change logo according to screen size */
-@media screen and (max-width: 1000px) {
-    #QMLogo {
-      background-image: url("../img/QMLogo_small.png");
-    }
-  }
 
 #headercontent {
     margin: 0 1rem;

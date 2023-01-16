@@ -1,6 +1,6 @@
 import * as tf from "@tensorflow/tfjs";
 import { norm } from "@tensorflow/tfjs";
-import { mode } from "./init";
+// import { mode } from "./init";
 
 // The prediction model
 let model;

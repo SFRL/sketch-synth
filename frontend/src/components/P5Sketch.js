@@ -41,60 +41,6 @@ const tracking = {
 // Clear Screen
 const clearScreen = (p) => p.background(paras.blendColour);
 
-const erasePoints = (currentSketch) => {
-  // Check if finished strokes already exist in current sketch
-  if (currentSketch.length > 0) {
-    const stroke = currentSketch.strokes[0];
-    // If only one point is left in the stroke, delete the stroke
-    if (stroke.length === 1) {
-      currentSketch.removeFirstStroke();
-    } else {
-      stroke.removeFirstPoint();
-      // Re-calculate simplification
-      stroke.simplify(paras.rdp);
-    }
-  }
-  // If only the current stroke exists so far, start deleting points from the beginning of that stroke
-  else {
-    currentStroke.removeFirstPoint();
-  }
-};
-
-const progressBar = (p, strokeLength) => {
-  const offsetX = 50;
-  const offsetY = 50;
-  const height = 30;
-  // Draw outline for progress bar outline
-  p.strokeWeight(3);
-  p.stroke(0);
-  p.noFill();
-  p.rect(offsetX, offsetY, paras.maxLength, height);
-  p.textSize(20);
-
-  p.fill(0);
-
-  // Display current stroke length in progress bar
-  p.rect(offsetX, offsetY, strokeLength, height);
-
-  // Draw markers and text
-  p.line(
-    offsetX + paras.minLength,
-    offsetY - 0.25 * height,
-    offsetX + paras.minLength,
-    offsetY + 1.25 * height
-  );
-  p.line(
-    offsetX + paras.maxLength,
-    offsetY - 0.25 * height,
-    offsetX + paras.maxLength,
-    offsetY + 1.25 * height
-  );
-
-  p.noStroke();
-  p.text("Min", offsetX + paras.minLength - 16, offsetY - 0.25 * height - 5);
-  p.text("Max", offsetX + paras.maxLength - 20, offsetY - 0.25 * height - 5);
-};
-
 // ------------------- REACT COMPONENT ------------------------------
 
 function P5Sketch(props) {
