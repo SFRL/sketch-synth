@@ -43,7 +43,6 @@ function PredictionPanel({ callback, globalNoisiness, globalThinness, sketch }) 
     currentParameters.sustain_1 = 1.0;
   }
   
-
   useEffect(() => {
     const getPrediction = () => {
       analyseSketch(sketch, processedImage.current, globalNoisiness, globalThinness)
@@ -61,7 +60,6 @@ function PredictionPanel({ callback, globalNoisiness, globalThinness, sketch }) 
   }, [setPrediction, setSynthId, callback, sketch]);
 
   
-
   return (
     <div className="control-panel">
       <SynthWrapper parameters={currentParameters}/>

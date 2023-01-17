@@ -9,6 +9,7 @@ class SynthWrapper extends React.PureComponent {
     this.note = props.note || 48;
     this.parameters = props.parameters;
     this.state = { loaded: false, playing: props.autoplay };
+    this.prevPlayState = React.createRef(false);
     this.handlePlay = this.handlePlay.bind(this);
     this.handleKeyInput = this.handleKeyInput.bind(this);
   }
@@ -45,7 +46,7 @@ class SynthWrapper extends React.PureComponent {
 
   componentDidUpdate() {
     // Get new props
-    if (!this.synth.initialized_) {
+    if (!this.state.loaded) {
       console.log("wait for FMSynth to finish initializing.")
     }
     else {
@@ -54,11 +55,12 @@ class SynthWrapper extends React.PureComponent {
       if (this.audioContext.state !== "running") {
         this.audioContext.resume();
       }
-      if (this.state.playing) {
+      if (this.state.playing && !this.prevPlayState) {
         this.synth.startNote(this.note);
-      } else {
+      } else if (!this.state.playing) {
         this.synth.endNote();
           }
+      this.prevPlayState = this.state.playing;
     }
     
 

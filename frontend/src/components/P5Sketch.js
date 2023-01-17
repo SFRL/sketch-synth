@@ -53,7 +53,7 @@ function P5Sketch(props) {
   const [globalNoisiness, setGlobalNoisiness] = useState(0);
   const [globalThinness, setGlobalThinness] = useState(0);
   const [predictionNumber, setPredictionNumber] = useState(0);
-
+  
   const updatePredictions = useCallback(
     (values) => {
       setGlobalNoisiness(
