@@ -116,4 +116,6 @@ const makePrediction = async (sketch, returnCanvas) => {
   return [noisyCalm[0],thinThick[0]];
 };
 
+
+
 export { loadModel, makePrediction };

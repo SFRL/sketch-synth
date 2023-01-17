@@ -45,16 +45,23 @@ class SynthWrapper extends React.PureComponent {
 
   componentDidUpdate() {
     // Get new props
-    this.synth.setAllParams(this.props.parameters);
-    // Play or pause audio depending on state
-    if (this.audioContext.state !== "running") {
-      this.audioContext.resume();
+    if (!this.synth.initialized_) {
+      console.log("wait for FMSynth to finish initializing.")
     }
-    if (this.state.playing) {
-      this.synth.startNote(this.note);
-    } else {
-      this.synth.endNote();
+    else {
+      this.synth.setAllParams(this.props.parameters);
+      // Play or pause audio depending on state
+      if (this.audioContext.state !== "running") {
+        this.audioContext.resume();
+      }
+      if (this.state.playing) {
+        this.synth.startNote(this.note);
+      } else {
+        this.synth.endNote();
+          }
     }
+    
+
   }
 
   componentWillUnmount() {
