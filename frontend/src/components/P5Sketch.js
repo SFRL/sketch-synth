@@ -85,13 +85,21 @@ function P5Sketch(props) {
       const canvas = p.createCanvas(w, h).parent(canvasParentRef);
       // Add event listeners
       canvasParent.addEventListener("contextmenu", detectRightClick);
+
+      canvasParent.addEventListener("touchstart", startTracking);
+      canvasParent.addEventListener("touchend", endTracking);
       canvasParent.addEventListener("mousedown", startTracking);
       canvasParent.addEventListener("mouseup", endTracking);
-      canvas.mouseMoved(() => {
+
+      const addPoint = () => {
         tracking.x = p.mouseX;
         tracking.y = p.mouseY;
-        tracking.time = p.millis();
-      });
+        tracking.time = p.millis();  
+      }
+
+      canvas.mouseMoved(addPoint);
+      canvas.touchMoved(addPoint);
+      
       p.frameRate(30);
       if (!props.freeze) {
         setFade(false);
@@ -165,9 +173,11 @@ function P5Sketch(props) {
     });
 
     return () => {
-      console.log("Unmout component");
+      console.log("Unmout P5 canvas component");
       sketchInstance.remove();
       canvasParent.removeEventListener("contextmenu", detectRightClick);
+      canvasParent.removeEventListener("touchstart", startTracking);
+      canvasParent.removeEventListener("touchend", endTracking);
       canvasParent.removeEventListener("mouseup", startTracking);
       canvasParent.removeEventListener("mousedown", endTracking);
     };

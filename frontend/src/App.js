@@ -4,6 +4,7 @@ import DrawingInterface from "./pages/DrawingInterface";
 // import "./css/loading.css";
 // import "./css/layout.css";
 // import "./css/button.css";
+import "./css/body.css";
 import "./App.css";
 
 import { loadModel } from "./scripts/tensorflowModel";
@@ -16,11 +17,16 @@ function App() {
   useEffect(() => {
     if (!loaded) {
       loadModel()
-        .then((model) => {
-          setLoaded(true);
-          console.log("Model loaded");
+        .then((hasLoaded) => {
+          if (hasLoaded) {
+            setLoaded(true);
+            console.log("Model loaded");
+          }
+          else {
+            alert("Something went wrong. Could not load model."); 
+          }
         })
-        .catch((error) => console.log("Could not load model"));
+        .catch((error) => console.log("Could not load model."));
     }
   }, [loaded, setLoaded]);
   const show = !loaded ? (

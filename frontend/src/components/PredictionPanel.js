@@ -1,5 +1,11 @@
 import { useState, useEffect, useRef} from "react";
-import { makePrediction } from "../scripts/tensorflowModel";
+import {
+  getSketchBoundingBox,
+  extractSketch,
+  createSketchImage,
+  preprocessSketch,
+  makePrediction,
+} from "../scripts/tensorflowModel";
 import { getClosestSynthId } from "../scripts/helper";
 import synthParameters from "../json/parameters.json";
 import SynthWrapper from "../components/SynthWrapper";
@@ -7,22 +13,31 @@ import "../css/prediction-panel.css";
 
 
 const analyseSketch = async (sketch,canvas,globalNoisiness,globalThinness) => {
-  const [noisy,thin] = await makePrediction(sketch,canvas);
 
-  globalNoisiness = Math.min(
-    Math.max(globalNoisiness + 2 * (noisy - 0.5), -12.3),
-    12.3
-  );
-
-  globalThinness = Math.min(
-      Math.max(globalThinness + 2 * (thin - 0.5), -12.3),
-      12.3
-    );
+  const [x,y,l,h] = getSketchBoundingBox(sketch.strokes,sketch.width,sketch.height)
   
-  const id = await getClosestSynthId(globalNoisiness,globalThinness);
+  if (l>0 && h>0) {
+      const canvasSlice = createSketchImage(sketch.strokes,x,y,l,h,100,100);
+      // const canvasSlice = extractSketch(sketch.canvas, x, y, l, h);
+      const processedSketchImg = preprocessSketch(canvasSlice, canvas);
+      const [noisy, thin] = await makePrediction(processedSketchImg);
+      globalNoisiness = Math.min(
+        Math.max(globalNoisiness + 2 * (noisy - 0.5), -12.3),
+        12.3
+      );
 
+      globalThinness = Math.min(
+        Math.max(globalThinness + 2 * (thin - 0.5), -12.3),
+        12.3
+      );
 
-  return {"noisy":noisy,"thin":thin,"synthId":id}
+      const id = await getClosestSynthId(globalNoisiness, globalThinness);
+      return { noisy: noisy, thin: thin, synthId: id };
+  }
+  else {
+    return {noisy: 0.5, thin: 0.5, synthId: undefined};
+  }
+ 
 }
 
 
