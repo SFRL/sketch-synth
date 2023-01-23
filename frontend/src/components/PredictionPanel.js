@@ -6,6 +6,7 @@ import {
   preprocessSketch,
   makePrediction,
 } from "../scripts/tensorflowModel";
+import shortstraw from "../scripts/shortstraw";
 import { getClosestSynthId } from "../scripts/helper";
 import synthParameters from "../json/parameters.json";
 import SynthWrapper from "../components/SynthWrapper";
@@ -21,6 +22,22 @@ const analyseSketch = async (sketch,canvas,globalNoisiness,globalThinness) => {
       // const canvasSlice = extractSketch(sketch.canvas, x, y, l, h);
       const processedSketchImg = preprocessSketch(canvasSlice, canvas);
       const [noisy, thin] = await makePrediction(processedSketchImg);
+
+      const shortstrawAnalysis = await shortstraw(sketch.strokes);
+
+      // Get corner points coordinates
+      const cornerIndices = shortstrawAnalysis[0];
+      const resampleData = shortstrawAnalysis[3];
+      const cornerCoords = {x:[],y:[]};
+
+      cornerIndices.forEach((array,i)=>{
+        const stroke = resampleData[i];
+        array.forEach((index)=>{
+          cornerCoords.x.push(stroke[0][index]);
+          cornerCoords.y.push(stroke[1][index]);
+        })
+      })
+
       globalNoisiness = Math.min(
         Math.max(globalNoisiness + 2 * (noisy - 0.5), -12.3),
         12.3
@@ -31,11 +48,12 @@ const analyseSketch = async (sketch,canvas,globalNoisiness,globalThinness) => {
         12.3
       );
 
-      const id = await getClosestSynthId(globalNoisiness, globalThinness);
-      return { noisy: noisy, thin: thin, synthId: id };
+      // const id = await getClosestSynthId(globalNoisiness, globalThinness);
+      const id = undefined;
+      return { noisy: noisy, thin: thin, synthId: id , cornerCoords: cornerCoords};
   }
   else {
-    return {noisy: 0.5, thin: 0.5, synthId: undefined};
+    return {noisy: 0.5, thin: 0.5, synthId: undefined, cornerPoints: []};
   }
  
 }
@@ -61,12 +79,13 @@ function PredictionPanel({ callback, globalNoisiness, globalThinness, sketch }) 
   useEffect(() => {
     const getPrediction = () => {
       analyseSketch(sketch, processedImage.current, globalNoisiness, globalThinness)
-        .then((anaylsis) => {
-          // console.log(result);
-          setPrediction([anaylsis.noisy,anaylsis.thin]);
-          setSynthId(anaylsis.synthId)
+        .then((analysis) => {
+          // console.log(analysis.featureInfo?.acute);
+          if (analysis.cornerCoords) sketch.updateCornerCoords(analysis.cornerCoords);
+          setPrediction([analysis.noisy,analysis.thin]);
+          setSynthId(analysis.synthId)
 
-          setTimeout(() => callback([anaylsis.noisy, anaylsis.thin]), 1000);
+          setTimeout(() => callback({prediction: [analysis.noisy, analysis.thin], cornerPoints: []}), 1000);
         })
         .catch((error) => console.log(error));
     };

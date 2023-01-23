@@ -16,6 +16,8 @@ class Sketch {
     this.length = 0;
     //Number of points (including stroke that has not been added to sketch yet)
     this.totalStrokeLength = 0;
+    // Array holding indices of corner points
+    this.cornerCoords = {x:[],y:[]};
   }
 
   // Set canvas element
@@ -57,11 +59,23 @@ class Sketch {
     this.length = this.strokes.length;
   }
 
+  updateCornerCoords(cornerCoords) {
+    this.cornerCoords.x = cornerCoords.x;
+    this.cornerCoords.y = cornerCoords.y
+    // console.log(this.cornerPoints);
+  }
+
   drawSketch(p, currentTime, simplified) {
     this.strokes.forEach((stroke) =>
       stroke.drawStroke(p, currentTime, simplified)
     );
     this.removeAllEmptyStrokes();
+  }
+
+  drawCornerPoints(p) {
+    p.stroke("red");
+    const [X,Y] = [this.cornerCoords.x,this.cornerCoords.y]
+    X.forEach((x,i)=>p.point(x,Y[i]));
   }
 
   // format data the same way as Quick, Draw! dataset for export

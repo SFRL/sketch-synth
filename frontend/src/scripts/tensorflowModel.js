@@ -12,7 +12,7 @@ const loadModel = async () => {
     // const networkInterfaces = os.networkInterfaces();
     // const ip = networkInterfaces["eth0"][0]["address"];
     await tf
-    .loadLayersModel(`http://localhost:5500/model/model.json`)
+    .loadLayersModel(`http://192.168.1.116:5500/model/model.json`)
     .then((result) => {
       model = result
     })

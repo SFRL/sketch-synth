@@ -53,18 +53,36 @@ function P5Sketch(props) {
   const [globalNoisiness, setGlobalNoisiness] = useState(0);
   const [globalThinness, setGlobalThinness] = useState(0);
   const [predictionNumber, setPredictionNumber] = useState(0);
-  
-  const updatePredictions = useCallback(
-    (values) => {
+  const [cornerPoints, setCornerPoints] = useState([[]]);
+
+  const updateData = useCallback(
+    (data) => {
       setGlobalNoisiness(
-        Math.min(Math.max(globalNoisiness + 2 * (values[0] - 0.5), -12.3), 12.3)
+        Math.min(
+          Math.max(globalNoisiness + 2 * (data.prediction[0] - 0.5), -12.3),
+          12.3
+        )
       );
       setGlobalThinness(
-        Math.min(Math.max(globalThinness + 2 * (values[1] - 0.5), -12.3), 12.3)
+        Math.min(
+          Math.max(globalThinness + 2 * (data.prediction[1] - 0.5), -12.3),
+          12.3
+        )
       );
       setPredictionNumber(predictionNumber + 1);
+      
+      setCornerPoints(data.cornerPoints);
+      
     },
-    [setPredictionNumber, predictionNumber, setGlobalNoisiness, globalNoisiness, setGlobalThinness, globalThinness]
+    [
+      setPredictionNumber,
+      predictionNumber,
+      setGlobalNoisiness,
+      globalNoisiness,
+      setGlobalThinness,
+      globalThinness,
+      setCornerPoints,
+    ]
   );
 
   useEffect(() => {
@@ -163,6 +181,11 @@ function P5Sketch(props) {
 
       // Draw sketch
       currentSketch.drawSketch(p, p.millis(), true);
+
+
+
+      // Draw corner points
+      currentSketch.drawCornerPoints(p);
     };
 
     const sketchInstance = new p5((p) => {
@@ -194,7 +217,7 @@ function P5Sketch(props) {
         globalNoisiness={globalNoisiness}
         globalThinness={globalThinness}
         predictionNumber={predictionNumber}
-        callback={updatePredictions}
+        callback={updateData}
       />
       <section className={"instructions"} ref={instructionsRef}>
         {props.instructions}
