@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef} from "react";
-import OSC from "osc-js";
+import OSC, {STATUS} from "osc-js";
 import { HighlightOff, InfoRounded } from "@material-ui/icons";
 import {
   createSketchImage,
@@ -7,6 +7,39 @@ import {
   makePrediction,
 } from "../scripts/tensorflowModel";
 import "../css/prediction-panel.css";
+
+
+const getOSCstatus = (statusID) => {
+  switch(statusID) {
+    case -1:
+      return <span style={{backgroundColor:"grey"}}>OSC not initialised</span>
+      break;
+    case 0:
+      return <span style={{ color: "green" }}>OSC trying to connect</span>;
+      break;
+    case 1:
+      return (
+        <span style={{ backgroundColor: "green" }}>OSC connection open</span>
+      );
+      break;
+    case 2:
+      return (
+        <span style={{ color: "red" }}>
+          OSC connection about to close
+        </span>
+      );
+      break;
+    case 3:
+      return (
+        <span style={{ backgroundColor: "red" }}>OSC connection closed</span>
+      );
+      break;
+    default:
+      return (
+        <span style={{ backgroundColor: "red" }}>OSC status unknown</span>
+      );
+  }
+}
 
 
 const analyseSketch = async (sketch,canvas) => {
@@ -45,6 +78,7 @@ function PredictionPanel({sketch, osc}) {
 
   useEffect(()=>{
     osc.open();
+    console.log(STATUS);
   },[osc])
   
   useEffect(() => {
@@ -77,8 +111,12 @@ function PredictionPanel({sketch, osc}) {
     <div className="control-panel expanded">
       <HighlightOff onClick={() => toggleDisplay(false)} />
       <div>
-        <canvas id="processedimage" ref={processedImage}></canvas>
+        <div className="canvas-container">
+          <canvas id="processedimage" ref={processedImage}></canvas>
+        </div>
+        <p style={{textAlign: "center"}}>CNN input</p>
       </div>
+
       <div className="feature-display">
         <span>Noisy: {`${analysis.noisy?.toFixed(3)}`}</span>
         <span>Thin: {`${analysis.thin?.toFixed(3)}`}</span>
@@ -88,6 +126,7 @@ function PredictionPanel({sketch, osc}) {
         <span>Width: {`${analysis.width?.toFixed(3)}`}</span>
         <span>Height: {`${analysis.height?.toFixed(3)}`}</span>
         <span>Number of stroke points: {analysis.pointCount}</span>
+        {getOSCstatus(osc.status())}
       </div>
     </div>
   ) : (

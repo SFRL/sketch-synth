@@ -13,7 +13,9 @@ function DrawingInterface(props) {
   const [reset, setReset] = useState(0);
   // Initialise sketch object (height and width will be set to true value in the setup function inside DrawingInterface)
   const [sketch, setSketch] = useState(new Sketch());
-  const [oscWebSocket, setOscWebSocket] = useState(new OSC());
+  const [oscWebSocket, setOscWebSocket] = useState(
+    new OSC(new OSC.WebsocketClientPlugin({ host: "161.23.53.107", port: 8080 }))
+  );
   
   // useState(new osc.WebSocketPort({
   //       url: "ws://localhost:12345",
