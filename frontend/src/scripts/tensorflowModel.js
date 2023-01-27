@@ -12,32 +12,16 @@ const loadModel = async () => {
     // const networkInterfaces = os.networkInterfaces();
     // const ip = networkInterfaces["eth0"][0]["address"];
     await tf
-    .loadLayersModel(`http://192.168.1.116:5500/model/model.json`)
-    .then((result) => {
-      model = result
-    })
-    .catch((error) => {
-      console.log(error)
-    });
+      .loadLayersModel(`https://sfrl.github.io/sketch-synth/model/model.json`)
+      .then((result) => {
+        model = result;
+      })
+      .catch((error) => {
+        console.log(error);
+      });
 
     return model?true:false
 };
-
-const getSketchBoundingBox = (strokes, canvasWidth, canvasHeight) => {
-  // Get bounding box dimensions of sketch
-  let maxX = 0;
-  let maxY = 0;
-  let minX = canvasWidth;
-  let minY = canvasHeight;
-  strokes.forEach((stroke) => {
-    maxX = Math.max(maxX, Math.max(...stroke.x));
-    maxY = Math.max(maxY, Math.max(...stroke.y));
-    minX = Math.min(minX, Math.min(...stroke.x));
-    minY = Math.min(minY, Math.min(...stroke.y));
-  });
-
-  return [minX,minY,Math.max(maxX - minX,0),Math.max(maxY - minY,0)]
-}
 
 // Get bounding box of sketch, cut sketch from canvas and rescale to fit cnn input
 const extractSketch = (canvas, x, y, l, h) => {
@@ -139,4 +123,4 @@ const makePrediction = async (preprocessed) => {
   return [noisyCalm[0],thinThick[0]];
 };
 
-export { loadModel, makePrediction, getSketchBoundingBox, extractSketch, createSketchImage, preprocessSketch };
+export { loadModel, makePrediction, extractSketch, createSketchImage, preprocessSketch };

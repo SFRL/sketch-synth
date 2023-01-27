@@ -12,6 +12,7 @@
     "@testing-library/user-event": "^12.8.3",
     "firebase": "^9.0.1",
     "lodash": "^4.17.21",
+    "osc-js": "^2.4.0",
     "p5": "^1.4.0",
     "pdf-viewer-reactjs": "^2.2.3",
     "react": "^17.0.2",

@@ -1,9 +1,6 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import DrawingInterface from "./pages/DrawingInterface";
 
-// import "./css/loading.css";
-// import "./css/layout.css";
-// import "./css/button.css";
 import "./css/body.css";
 import "./App.css";
 

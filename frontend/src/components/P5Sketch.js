@@ -1,8 +1,6 @@
 import React from "react";
-import PredictionPanel from "../components/PredictionPanel";
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState} from "react";
 import p5 from "p5";
-// import Sketch from "./Sketch";
 import { Stroke } from "../scripts/sketchClasses";
 import "../css/instructions.css";
 
@@ -38,6 +36,37 @@ const tracking = {
 
 // ------------------- FUNCTIONS -----------------------
 
+const eucledianDistance = (p1, p2) =>
+  Math.sqrt(
+    p1
+      .map((p1val, i) => (p1val - p2[i]) ** 2)
+      .reduce((sum, current) => sum + current, 0)
+  );
+
+// Calculate sketching speed 
+const calculateSpeed = (stroke,limit=5,scale=[1,1]) => {
+  if (stroke.length < limit) return 0
+
+  // Get last n points according to limit
+  const [X, Y] = [
+    stroke.x.slice(stroke.length - limit),
+    stroke.y.slice(stroke.length - limit),
+  ];
+  // Get time difference between current point and 5 points back
+  const timePassed = stroke.time[stroke.length-1] - stroke.time[stroke.length-limit];
+
+  // Calculate eucledian distance between points
+  const distance = X.reduce((length,currentPoint,index)=> {
+    const [p1, p2] = [
+          [scale[0]*X[index], scale[1]*Y[index]],
+          [scale[0]*X[index - 1], scale[1]*Y[index - 1]],
+        ];
+    return index ? length + eucledianDistance(p1,p2) : 0
+},0)
+  
+  return distance/timePassed
+}
+
 // Clear Screen
 const clearScreen = (p) => p.background(paras.blendColour);
 
@@ -50,40 +79,6 @@ function P5Sketch(props) {
 
   // State whether instructions should fade or not
   const [fade, setFade] = useState(false);
-  const [globalNoisiness, setGlobalNoisiness] = useState(0);
-  const [globalThinness, setGlobalThinness] = useState(0);
-  const [predictionNumber, setPredictionNumber] = useState(0);
-  const [cornerPoints, setCornerPoints] = useState([[]]);
-
-  const updateData = useCallback(
-    (data) => {
-      setGlobalNoisiness(
-        Math.min(
-          Math.max(globalNoisiness + 2 * (data.prediction[0] - 0.5), -12.3),
-          12.3
-        )
-      );
-      setGlobalThinness(
-        Math.min(
-          Math.max(globalThinness + 2 * (data.prediction[1] - 0.5), -12.3),
-          12.3
-        )
-      );
-      setPredictionNumber(predictionNumber + 1);
-      
-      setCornerPoints(data.cornerPoints);
-      
-    },
-    [
-      setPredictionNumber,
-      predictionNumber,
-      setGlobalNoisiness,
-      globalNoisiness,
-      setGlobalThinness,
-      globalThinness,
-      setCornerPoints,
-    ]
-  );
 
   useEffect(() => {
     // The sketch object holding the participant input, passed from parent
@@ -167,11 +162,18 @@ function P5Sketch(props) {
 
         // Update last stroke of sketch
         currentSketch.updateLastStroke(currentStroke);
+
+        // currentSketch.calculateSpeed(3,true);
       }
       // pen is above the paper
       else if (justFinished) {
         // Simplify after stroke is finished
         currentStroke.simplify(paras.rdp);
+
+        currentSketch.calculateCornerPoints();
+
+        // Flag that stroke is finished sketching
+        currentStroke.isSketching = false;
 
         // Add stroke to sketch
         currentSketch.updateLastStroke(currentStroke);
@@ -179,13 +181,19 @@ function P5Sketch(props) {
         justFinished = false;
       }
 
+      // Update total length of sketch
+      currentSketch.updateTotalStrokeLength();
+
       // Draw sketch
       currentSketch.drawSketch(p, p.millis(), true);
 
-
-
       // Draw corner points
-      currentSketch.drawCornerPoints(p);
+      // currentSketch.drawCornerPoints(p);
+
+      // Draw bounding box
+      // p.stroke("red");
+      // p.noFill();
+      // p.rect(...currentSketch.getBoundingBox());
     };
 
     const sketchInstance = new p5((p) => {
@@ -212,13 +220,6 @@ function P5Sketch(props) {
 
   return (
     <>
-      <PredictionPanel
-        sketch={props.sketch}
-        globalNoisiness={globalNoisiness}
-        globalThinness={globalThinness}
-        predictionNumber={predictionNumber}
-        callback={updateData}
-      />
       <section className={"instructions"} ref={instructionsRef}>
         {props.instructions}
       </section>

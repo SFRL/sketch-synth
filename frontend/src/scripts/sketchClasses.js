@@ -1,4 +1,12 @@
 import simplifyPath from "./RDP";
+import shortstraw from "./shortstraw";
+
+const eucledianDistance = (p1, p2) =>
+  Math.sqrt(
+    p1
+      .map((p1val, i) => (p1val - p2[i]) ** 2)
+      .reduce((sum, current) => sum + current, 0)
+  );
 
 // Class for whole sketch
 class Sketch {
@@ -7,7 +15,7 @@ class Sketch {
     this.strokes = [];
     // Canvas Element
     this.canvas = canvas || null;
-    //Dimensions of sketch
+    //Dimensions of canvas of sketch
     this.width = w || 0;
     this.height = h || 0;
     //Start time of sketch
@@ -17,7 +25,8 @@ class Sketch {
     //Number of points (including stroke that has not been added to sketch yet)
     this.totalStrokeLength = 0;
     // Array holding indices of corner points
-    this.cornerCoords = {x:[],y:[]};
+    this.cornerCoords = { x: [], y: [] };
+    this.shortstraw = undefined;
   }
 
   // Set canvas element
@@ -59,10 +68,28 @@ class Sketch {
     this.length = this.strokes.length;
   }
 
+  calculateCornerPoints() {
+    const shortstrawAnalysis = shortstraw(this.strokes);
+    const cornerIndices = shortstrawAnalysis[0];
+    const resampledData = shortstrawAnalysis[3];
+
+    const cornerCoords = { x: [], y: [] };
+
+    cornerIndices.forEach((array, i) => {
+      const stroke = resampledData[i];
+      array.forEach((index) => {
+        cornerCoords.x.push(stroke[0][index]);
+        cornerCoords.y.push(stroke[1][index]);
+      });
+    });
+
+    this.cornerCoords = cornerCoords;
+    this.shortstraw = shortstrawAnalysis;
+  }
+
   updateCornerCoords(cornerCoords) {
     this.cornerCoords.x = cornerCoords.x;
-    this.cornerCoords.y = cornerCoords.y
-    // console.log(this.cornerPoints);
+    this.cornerCoords.y = cornerCoords.y;
   }
 
   drawSketch(p, currentTime, simplified) {
@@ -74,8 +101,51 @@ class Sketch {
 
   drawCornerPoints(p) {
     p.stroke("red");
-    const [X,Y] = [this.cornerCoords.x,this.cornerCoords.y]
-    X.forEach((x,i)=>p.point(x,Y[i]));
+    const [X, Y] = [this.cornerCoords.x, this.cornerCoords.y];
+    X.forEach((x, i) => p.point(x, Y[i]));
+  }
+
+  // Bounding box of sketch in format [x,y,w,h] (x/y position of top left corner and width and height of box)
+  getBoundingBox() {
+    // Get bounding box dimensions of sketch
+    let maxX = 0;
+    let maxY = 0;
+    let minX = this.width;
+    let minY = this.height;
+    this.strokes.forEach((stroke) => {
+      maxX = Math.max(maxX, Math.max(...stroke.x));
+      maxY = Math.max(maxY, Math.max(...stroke.y));
+      minX = Math.min(minX, Math.min(...stroke.x));
+      minY = Math.min(minY, Math.min(...stroke.y));
+    });
+    return [minX, minY, Math.max(maxX - minX, 0), Math.max(maxY - minY, 0)];
+  }
+
+  // Calculate sketching speed 
+  getCurrentSpeed(limit=5,scale=true) {
+    const stroke = this.strokes[this.length - 1];
+    // If sketch is too short or not currently sketching, the speed is 0
+    if (!stroke || !stroke.isSketching || stroke.length < limit) return 0
+
+    // If scale true, normalise distance to canvas size
+    const scaleFactor = scale?[1000/this.width,1000/this.height]:[1,1];
+    // Get last n points according to limit
+    const [X, Y] = [
+      stroke.x.slice(stroke.length - limit),
+      stroke.y.slice(stroke.length - limit),
+    ];
+    // Get time difference between current point and 5 points back
+    const timePassed = stroke.time[stroke.length-1] - stroke.time[stroke.length-limit];
+
+    // Calculate eucledian distance between points
+    const distance = X.reduce((length,_,index)=> {
+      const [p1, p2] = [
+            [scaleFactor[0]*X[index], scaleFactor[1]*Y[index]],
+            [scaleFactor[0]*X[index - 1], scaleFactor[1]*Y[index - 1]],
+          ];
+      return index ? length + eucledianDistance(p1,p2) : 0
+  },0)
+    return distance/timePassed;
   }
 
   // format data the same way as Quick, Draw! dataset for export
@@ -127,6 +197,8 @@ class Stroke {
     // Does the stroke have a opacity above 0
     this.visible = true;
     this.decay = decay || 0.0025;
+    // flag if stroke is currently drawn
+    this.isSketching = true;
   }
 
   addPoint(x_, y_, time_) {

@@ -1,112 +1,103 @@
 import { useState, useEffect, useRef} from "react";
+import OSC from "osc-js";
+import { HighlightOff, InfoRounded } from "@material-ui/icons";
 import {
-  getSketchBoundingBox,
-  extractSketch,
   createSketchImage,
   preprocessSketch,
   makePrediction,
 } from "../scripts/tensorflowModel";
-import shortstraw from "../scripts/shortstraw";
-import { getClosestSynthId } from "../scripts/helper";
-import synthParameters from "../json/parameters.json";
-import SynthWrapper from "../components/SynthWrapper";
 import "../css/prediction-panel.css";
 
 
-const analyseSketch = async (sketch,canvas,globalNoisiness,globalThinness) => {
+const analyseSketch = async (sketch,canvas) => {
+  if (!sketch) return { noisy: 0.5, thin: 0.5, synthId: undefined, cornerPoints: [] };
 
-  const [x,y,l,h] = getSketchBoundingBox(sketch.strokes,sketch.width,sketch.height)
-  
-  if (l>0 && h>0) {
-      const canvasSlice = createSketchImage(sketch.strokes,x,y,l,h,100,100);
-      // const canvasSlice = extractSketch(sketch.canvas, x, y, l, h);
-      const processedSketchImg = preprocessSketch(canvasSlice, canvas);
-      const [noisy, thin] = await makePrediction(processedSketchImg);
+  const [x,y,l,h] = sketch.getBoundingBox();
+  const canvasSlice = createSketchImage(sketch.strokes,x,y,l,h,100,100);
+  const processedSketchImg = preprocessSketch(canvasSlice, canvas);
+  const [noisy, thin] = await makePrediction(processedSketchImg);
 
-      const shortstrawAnalysis = await shortstraw(sketch.strokes);
-
-      // Get corner points coordinates
-      const cornerIndices = shortstrawAnalysis[0];
-      const resampleData = shortstrawAnalysis[3];
-      const cornerCoords = {x:[],y:[]};
-
-      cornerIndices.forEach((array,i)=>{
-        const stroke = resampleData[i];
-        array.forEach((index)=>{
-          cornerCoords.x.push(stroke[0][index]);
-          cornerCoords.y.push(stroke[1][index]);
-        })
-      })
-
-      globalNoisiness = Math.min(
-        Math.max(globalNoisiness + 2 * (noisy - 0.5), -12.3),
-        12.3
-      );
-
-      globalThinness = Math.min(
-        Math.max(globalThinness + 2 * (thin - 0.5), -12.3),
-        12.3
-      );
-
-      // const id = await getClosestSynthId(globalNoisiness, globalThinness);
-      const id = undefined;
-      return { noisy: noisy, thin: thin, synthId: id , cornerCoords: cornerCoords};
-  }
-  else {
-    return {noisy: 0.5, thin: 0.5, synthId: undefined, cornerPoints: []};
-  }
- 
+  const speed = sketch.getCurrentSpeed(3, true);
+  const centerX = (x + 0.5*l)/sketch.width;
+  const width = l/sketch.width;
+  const height = h/sketch.height;
+  return { noisy: noisy, thin: thin, acuteAngles: sketch.shortstraw ? sketch.shortstraw[2].acute : undefined, speed: speed, centerX: centerX, width: width, height: height, pointCount: sketch.totalStrokeLength};
 }
 
 
+function PredictionPanel({sketch, osc}) {
+  const [analysis, setAnalysis] = useState({
+    noisy: undefined,
+    thin: undefined,
+    acuteAngles: undefined,
+    speed: undefined,
+    centerX: undefined,
+    width: undefined,
+    height: undefined,
+    pointCount: undefined,
+  });
 
-function PredictionPanel({ callback, globalNoisiness, globalThinness, sketch }) {
-  // const [globalNoisiness, setGlobalNoisiness] = useState(0);
-  const [prediction, setPrediction] = useState([0.5,0.5]);
-  const [synthId, setSynthId] = useState(undefined);
+  const [displayPanel, setDisplayPanel] = useState(true);
+
+  const toggleDisplay = (val) => setDisplayPanel(val);
+
   const processedImage = useRef(null);
 
-  const currentParameters = synthId
-    ? synthParameters[synthId].parameters
-    : undefined;
-  
-  // Make all synth sounds sustained
-  if (currentParameters) {
-    currentParameters.attack_1 = 0.0;
-    currentParameters.sustain_1 = 1.0;
-  }
+  useEffect(()=>{
+    osc.open();
+  },[osc])
   
   useEffect(() => {
     const getPrediction = () => {
-      analyseSketch(sketch, processedImage.current, globalNoisiness, globalThinness)
+      analyseSketch(
+        sketch,
+        processedImage.current,
+      )
         .then((analysis) => {
-          // console.log(analysis.featureInfo?.acute);
-          if (analysis.cornerCoords) sketch.updateCornerCoords(analysis.cornerCoords);
-          setPrediction([analysis.noisy,analysis.thin]);
-          setSynthId(analysis.synthId)
+          setAnalysis(analysis)
+          
+          // Send data via OSC
+          Object.keys(analysis).forEach((key)=> {
+            if (analysis[key]) {
+              const message = new OSC.Message(`/${key}`, analysis[key]);
+              osc.send(message);
+            }
+          })
 
-          setTimeout(() => callback({prediction: [analysis.noisy, analysis.thin], cornerPoints: []}), 1000);
+        
         })
         .catch((error) => console.log(error));
     };
-    getPrediction();
+      setTimeout(()=>{
+        getPrediction();
+      },1000);
+  }, [sketch, analysis, osc, setAnalysis]);
 
-  }, [setPrediction, setSynthId, callback, sketch]);
-
-  
-  return (
-    <div className="control-panel">
-      <SynthWrapper parameters={currentParameters}/>
-      <div className="prediction-panel">
-        <p>Noisy: {`${prediction[0].toFixed(2)}`}</p>
-        <p>Thin: {`${prediction[1].toFixed(2)}`}</p>
-        <p>Synth ID: {synthId}</p>
+  const content = displayPanel ? (
+    <div className="control-panel expanded">
+      <HighlightOff onClick={() => toggleDisplay(false)} />
+      <div>
         <canvas id="processedimage" ref={processedImage}></canvas>
-        <p>Absolute noisiness: {`${globalNoisiness.toFixed(2)}`}</p>
-        <p>Absolute thinness: {`${globalThinness.toFixed(2)}`}</p>
+      </div>
+      <div className="feature-display">
+        <span>Noisy: {`${analysis.noisy?.toFixed(3)}`}</span>
+        <span>Thin: {`${analysis.thin?.toFixed(3)}`}</span>
+        <span>Number of acute angles: {analysis.acuteAngles}</span>
+        <span>Drawing speed: {`${analysis.speed?.toFixed(3)}`}</span>
+        <span>Center: {`${analysis.centerX?.toFixed(3)}`}</span>
+        <span>Width: {`${analysis.width?.toFixed(3)}`}</span>
+        <span>Height: {`${analysis.height?.toFixed(3)}`}</span>
+        <span>Number of stroke points: {analysis.pointCount}</span>
       </div>
     </div>
+  ) : (
+    <div className="control-panel">
+      <InfoRounded onClick={() => toggleDisplay(true)} />
+    </div>
   );
+
+  
+  return <>{content}</>;
 }
 
 export default PredictionPanel;
