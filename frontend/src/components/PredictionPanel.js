@@ -15,28 +15,28 @@ const getOSCstatus = (statusID) => {
       return <span style={{backgroundColor:"grey"}}>OSC not initialised</span>
       break;
     case 0:
-      return <span style={{ color: "green" }}>OSC trying to connect</span>;
+      return <span style={{ color: "green" }}>OSC connecting</span>;
       break;
     case 1:
       return (
-        <span style={{ backgroundColor: "green" }}>OSC connection open</span>
+        <span style={{ backgroundColor: "green" }}>OSC open</span>
       );
       break;
     case 2:
       return (
         <span style={{ color: "red" }}>
-          OSC connection about to close
+          OSC closing
         </span>
       );
       break;
     case 3:
       return (
-        <span style={{ backgroundColor: "red" }}>OSC connection closed</span>
+        <span style={{ backgroundColor: "red" }}>OSC closed</span>
       );
       break;
     default:
       return (
-        <span style={{ backgroundColor: "red" }}>OSC status unknown</span>
+        <span style={{ backgroundColor: "red" }}>OSC unknown</span>
       );
   }
 }
@@ -77,8 +77,7 @@ function PredictionPanel({sketch, osc}) {
   const processedImage = useRef(null);
 
   useEffect(()=>{
-    osc.open();
-    console.log(STATUS);
+    osc.open({ host: "161.23.53.107", port: 8080 });
   },[osc])
   
   useEffect(() => {
@@ -120,12 +119,12 @@ function PredictionPanel({sketch, osc}) {
       <div className="feature-display">
         <span>Noisy: {`${analysis.noisy?.toFixed(3)}`}</span>
         <span>Thin: {`${analysis.thin?.toFixed(3)}`}</span>
-        <span>Number of acute angles: {analysis.acuteAngles}</span>
-        <span>Drawing speed: {`${analysis.speed?.toFixed(3)}`}</span>
-        <span>Center: {`${analysis.centerX?.toFixed(3)}`}</span>
+        <span>Acute angles: {analysis.acuteAngles}</span>
+        <span>Speed: {`${analysis.speed?.toFixed(3)}`}</span>
+        <span>CenterX: {`${analysis.centerX?.toFixed(3)}`}</span>
         <span>Width: {`${analysis.width?.toFixed(3)}`}</span>
         <span>Height: {`${analysis.height?.toFixed(3)}`}</span>
-        <span>Number of stroke points: {analysis.pointCount}</span>
+        <span>Strokes: {analysis.pointCount}</span>
         {getOSCstatus(osc.status())}
       </div>
     </div>
