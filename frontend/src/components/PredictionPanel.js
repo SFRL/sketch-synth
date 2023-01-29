@@ -55,7 +55,17 @@ const analyseSketch = async (sketch,canvas) => {
   const centerY = 1-(y + 0.5*h)/sketch.height;
   const width = l/sketch.width;
   const height = h/sketch.height;
-  return { noisy: noisy, thin: thin, acuteAngles: sketch.shortstraw ? sketch.shortstraw[2].acute : undefined, speed: speed, centerX: centerX, centerY: centerY, width: width, height: height, strokes: sketch.length};
+  return { 
+    noisy: noisy, 
+    thin: thin, 
+    acuteAngles: sketch.shortstraw ? sketch.shortstraw[2].acute : undefined, 
+    speed: speed, 
+    centerX: centerX, 
+    centerY: centerY, 
+    width: width, 
+    height: height, 
+    strokes: sketch.length, 
+    length: sketch.totalStrokeLength};
 }
 
 
@@ -70,6 +80,7 @@ const PredictionPanel = ({sketch, osc, oscHost}) => {
     width: undefined,
     height: undefined,
     strokes: undefined,
+    length: undefined,
   });
 
   const [displayPanel, setDisplayPanel] = useState(true);
@@ -126,6 +137,7 @@ const PredictionPanel = ({sketch, osc, oscHost}) => {
         <span>Width: {`${analysis.width?.toFixed(3)}`}</span>
         <span>Height: {`${analysis.height?.toFixed(3)}`}</span>
         <span>Strokes: {analysis.strokes}</span>
+        <span>Length: {analysis.length}</span>
         {getOSCstatus(osc.status())}
       </div>
     </div>
