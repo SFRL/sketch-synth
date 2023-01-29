@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import DrawingInterface from "./pages/DrawingInterface";
+import DrawingInterface from "./DrawingInterface";
 import { CookiesProvider, useCookies } from "react-cookie";
 
 import "./css/body.css";

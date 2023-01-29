@@ -1,11 +1,11 @@
-import { useState, useEffect, useCallback} from "react";
+import { useState, useEffect} from "react";
 import { debounce } from "lodash";
 import OSC from "osc-js";
-import P5Sketch from "../components/P5Sketch";
-import PredictionPanel from "../components/PredictionPanel";
-import { Sketch } from "../scripts/sketchClasses";
-import "../css/layout.css";
-import "../css/button.css";
+import P5Sketch from "./P5Sketch";
+import ControlPanel from "./ControlPanel";
+import { Sketch } from "./scripts/sketchClasses";
+import "./css/layout.css";
+import "./css/button.css";
 
 function DrawingInterface(props) {
   // State that is mainly used to force p5 sketch to rerender if participant clicks reset or changes screen size,
@@ -29,7 +29,7 @@ function DrawingInterface(props) {
 
   return (
     <>
-      <PredictionPanel sketch={sketch} osc={oscWebSocket} oscHost={props.oscHost}/>
+      <ControlPanel sketch={sketch} osc={oscWebSocket} oscHost={props.oscHost}/>
       <P5Sketch
         sketch={sketch}
         rdp={props.rdp}

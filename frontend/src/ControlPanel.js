@@ -1,39 +1,34 @@
 import { useState, useEffect, useRef} from "react";
-import OSC, {STATUS} from "osc-js";
+import OSC from "osc-js";
 import { HighlightOff, InfoRounded } from "@material-ui/icons";
 import {
   createSketchImage,
   preprocessSketch,
   makePrediction,
-} from "../scripts/tensorflowModel";
-import "../css/prediction-panel.css";
+} from "./scripts/tensorflowModel";
+import "./css/prediction-panel.css";
 
 
 const getOSCstatus = (statusID) => {
   switch(statusID) {
     case -1:
       return <span style={{backgroundColor:"grey"}}>OSC not initialised</span>
-      break;
     case 0:
       return <span style={{ color: "green" }}>OSC connecting</span>;
-      break;
     case 1:
       return (
         <span style={{ backgroundColor: "green" }}>OSC open</span>
       );
-      break;
     case 2:
       return (
         <span style={{ color: "red" }}>
           OSC closing
         </span>
       );
-      break;
     case 3:
       return (
         <span style={{ backgroundColor: "red" }}>OSC closed</span>
       );
-      break;
     default:
       return (
         <span style={{ backgroundColor: "red" }}>OSC unknown</span>
@@ -69,7 +64,7 @@ const analyseSketch = async (sketch,canvas) => {
 }
 
 
-const PredictionPanel = ({sketch, osc, oscHost}) => {
+const ControlPanel = ({sketch, osc, oscHost}) => {
   const [analysis, setAnalysis] = useState({
     noisy: undefined,
     thin: undefined,
@@ -151,4 +146,4 @@ const PredictionPanel = ({sketch, osc, oscHost}) => {
   return <>{content}</>;
 }
 
-export default PredictionPanel;
+export default ControlPanel;
