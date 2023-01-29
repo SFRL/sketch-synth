@@ -7,7 +7,7 @@ import { Sketch } from "./scripts/sketchClasses";
 import "./css/layout.css";
 import "./css/button.css";
 
-function DrawingInterface(props) {
+const SketchSynthInterface = (props) => {
   // State that is mainly used to force p5 sketch to rerender if participant clicks reset or changes screen size,
   // but it also tracks how often a reset happened
   const [reset, setReset] = useState(0);
@@ -16,7 +16,6 @@ function DrawingInterface(props) {
   const [oscWebSocket, setOscWebSocket] = useState(
     new OSC()
   );
-
 
   useEffect(() => {
     // Re-render sketch when window size is changed, use debounce to prevent triggering too many re-renders
@@ -29,7 +28,11 @@ function DrawingInterface(props) {
 
   return (
     <>
-      <ControlPanel sketch={sketch} osc={oscWebSocket} oscHost={props.oscHost}/>
+      <ControlPanel 
+        sketch={sketch} 
+        osc={oscWebSocket} 
+        oscHost={props.oscHost}
+      />
       <P5Sketch
         sketch={sketch}
         rdp={props.rdp}
@@ -42,4 +45,4 @@ function DrawingInterface(props) {
   );
 }
 
-export default DrawingInterface;
+export default SketchSynthInterface;

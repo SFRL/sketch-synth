@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import DrawingInterface from "./DrawingInterface";
+import SketchSynthInterface from "./SketchSynthInterface";
 import { CookiesProvider, useCookies } from "react-cookie";
 
 import "./css/body.css";
@@ -7,7 +7,7 @@ import "./css/welcomescreen.css";
 
 import { loadModel } from "./scripts/tensorflowModel";
 
-function App() {
+const App = () => {
   const [loaded, setLoaded] = useState(false);
   const [started, setStarted] = useState(false);
   
@@ -72,7 +72,7 @@ function App() {
   const show = !started ? (
     welcomeScreen
   ) : (
-    <DrawingInterface
+    <SketchSynthInterface
       rdp={2}
       minLength={20}
       maxLength={150}

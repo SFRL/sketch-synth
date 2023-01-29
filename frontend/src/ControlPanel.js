@@ -6,7 +6,7 @@ import {
   preprocessSketch,
   makePrediction,
 } from "./scripts/tensorflowModel";
-import "./css/prediction-panel.css";
+import "./css/controlpanel.css";
 
 
 const getOSCstatus = (statusID) => {
