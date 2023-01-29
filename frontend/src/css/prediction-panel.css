@@ -27,10 +27,8 @@
     right: calc(0.5rem-2.25px);
     cursor: pointer;
     border: 0.5px solid black;
-    box-shadow: black 2px 2px;
+    box-shadow: 5px 5px #666;
 }
-
-
 
 .feature-display {
     display: flex;

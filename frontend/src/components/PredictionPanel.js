@@ -52,22 +52,24 @@ const analyseSketch = async (sketch,canvas) => {
 
   const speed = sketch.getCurrentSpeed(3, true);
   const centerX = (x + 0.5*l)/sketch.width;
+  const centerY = 1-(y + 0.5*h)/sketch.height;
   const width = l/sketch.width;
   const height = h/sketch.height;
-  return { noisy: noisy, thin: thin, acuteAngles: sketch.shortstraw ? sketch.shortstraw[2].acute : undefined, speed: speed, centerX: centerX, width: width, height: height, pointCount: sketch.totalStrokeLength};
+  return { noisy: noisy, thin: thin, acuteAngles: sketch.shortstraw ? sketch.shortstraw[2].acute : undefined, speed: speed, centerX: centerX, centerY: centerY, width: width, height: height, strokes: sketch.length};
 }
 
 
-function PredictionPanel({sketch, osc}) {
+const PredictionPanel = ({sketch, osc, oscHost}) => {
   const [analysis, setAnalysis] = useState({
     noisy: undefined,
     thin: undefined,
     acuteAngles: undefined,
     speed: undefined,
     centerX: undefined,
+    centerY: undefined,
     width: undefined,
     height: undefined,
-    pointCount: undefined,
+    strokes: undefined,
   });
 
   const [displayPanel, setDisplayPanel] = useState(true);
@@ -77,8 +79,8 @@ function PredictionPanel({sketch, osc}) {
   const processedImage = useRef(null);
 
   useEffect(()=>{
-    osc.open({ host: "161.23.53.107", port: 8080 });
-  },[osc])
+    osc.open({ host: oscHost, port: 8080 });
+  },[osc,oscHost])
   
   useEffect(() => {
     const getPrediction = () => {
@@ -89,21 +91,19 @@ function PredictionPanel({sketch, osc}) {
         .then((analysis) => {
           setAnalysis(analysis)
           
-          // Send data via OSC
+          // Send data via Websocket OSC
           Object.keys(analysis).forEach((key)=> {
-            if (analysis[key]) {
+            if (typeof analysis[key] !== "undefined") {
               const message = new OSC.Message(`/${key}`, analysis[key]);
               osc.send(message);
             }
           })
-
-        
         })
         .catch((error) => console.log(error));
     };
       setTimeout(()=>{
         getPrediction();
-      },1000);
+      },100);
   }, [sketch, analysis, osc, setAnalysis]);
 
   const content = displayPanel ? (
@@ -113,7 +113,7 @@ function PredictionPanel({sketch, osc}) {
         <div className="canvas-container">
           <canvas id="processedimage" ref={processedImage}></canvas>
         </div>
-        <p style={{textAlign: "center"}}>CNN input</p>
+        <p style={{ textAlign: "center" }}>CNN input</p>
       </div>
 
       <div className="feature-display">
@@ -122,9 +122,10 @@ function PredictionPanel({sketch, osc}) {
         <span>Acute angles: {analysis.acuteAngles}</span>
         <span>Speed: {`${analysis.speed?.toFixed(3)}`}</span>
         <span>CenterX: {`${analysis.centerX?.toFixed(3)}`}</span>
+        <span>CenterY: {`${analysis.centerY?.toFixed(3)}`}</span>
         <span>Width: {`${analysis.width?.toFixed(3)}`}</span>
         <span>Height: {`${analysis.height?.toFixed(3)}`}</span>
-        <span>Strokes: {analysis.pointCount}</span>
+        <span>Strokes: {analysis.strokes}</span>
         {getOSCstatus(osc.status())}
       </div>
     </div>

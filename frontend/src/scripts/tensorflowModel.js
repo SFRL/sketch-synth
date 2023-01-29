@@ -30,7 +30,7 @@ const extractSketch = (canvas, x, y, l, h) => {
 
 };
 
-const preprocessSketch = (imgData, returnCanvas, invert = false) => {
+const preprocessSketch = (imgData, returnCanvas = undefined, invert = false) => {
   return tf.tidy(() => {
     //convert the image data to a tensor
     let tensor = tf.browser.fromPixels(imgData, 1);
@@ -73,9 +73,11 @@ const preprocessSketch = (imgData, returnCanvas, invert = false) => {
     const batched = normalized.expandDims(0);
 
     // Display extracted, processed image on prediction panel canvas
-    returnCanvas.width = normalized.shape.width;
-    returnCanvas.height = normalized.shape.height;
-    tf.browser.toPixels(normalized, returnCanvas);
+    if (returnCanvas) {
+      returnCanvas.width = normalized.shape.width;
+      returnCanvas.height = normalized.shape.height;
+      tf.browser.toPixels(normalized, returnCanvas);
+    }
 
     return batched;
   });

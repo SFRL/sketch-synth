@@ -16,11 +16,6 @@ function DrawingInterface(props) {
   const [oscWebSocket, setOscWebSocket] = useState(
     new OSC()
   );
-  
-  // useState(new osc.WebSocketPort({
-  //       url: "ws://localhost:12345",
-  //       metadata: true
-  //   }));
 
 
   useEffect(() => {
@@ -34,7 +29,7 @@ function DrawingInterface(props) {
 
   return (
     <>
-      <PredictionPanel sketch={sketch} osc={oscWebSocket}/>
+      <PredictionPanel sketch={sketch} osc={oscWebSocket} oscHost={props.oscHost}/>
       <P5Sketch
         sketch={sketch}
         rdp={props.rdp}
