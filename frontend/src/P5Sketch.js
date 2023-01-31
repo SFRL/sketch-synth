@@ -148,8 +148,6 @@ function P5Sketch(props) {
           currentSketch.addStroke(currentStroke);
           // Activate predictions
           justFinished = true;
-          // Activate prediction loop in parent
-          // props.callback(true);
         }
 
         // If this is the first time something is drawn, set fade state to true to fade out instructions
@@ -157,27 +155,18 @@ function P5Sketch(props) {
 
         currentStroke.addPoint(p.mouseX, p.mouseY, tracking.time);
 
-        // Draw stroke
-        currentStroke.drawStroke(p, p.millis(), false);
-
         // Update last stroke of sketch
         currentSketch.updateLastStroke(currentStroke);
-
-        // currentSketch.calculateSpeed(3,true);
       }
       // pen is above the paper
       else if (justFinished) {
         // Simplify after stroke is finished
         currentStroke.simplify(paras.rdp);
-
         currentSketch.calculateCornerPoints();
-
         // Flag that stroke is finished sketching
         currentStroke.isSketching = false;
-
         // Add stroke to sketch
         currentSketch.updateLastStroke(currentStroke);
-
         justFinished = false;
       }
 
