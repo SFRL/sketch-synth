@@ -12,7 +12,7 @@ const loadModel = async () => {
     // const networkInterfaces = os.networkInterfaces();
     // const ip = networkInterfaces["eth0"][0]["address"];
     await tf
-      .loadLayersModel(`https://sfrl.github.io/sketch-synth/src/media/model.json`)
+      .loadLayersModel(`https://sfrl.github.io/sketch-synth/model/model.json`)
       .then((result) => {
         model = result;
       })
