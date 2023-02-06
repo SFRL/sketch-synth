@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "/sketch-synth/static/css/main.f0fb9c27.css",
-    "main.js": "/sketch-synth/static/js/main.93a8114c.js",
+    "main.js": "/sketch-synth/static/js/main.9a623fd4.js",
     "static/js/787.5ff1569e.chunk.js": "/sketch-synth/static/js/787.5ff1569e.chunk.js",
     "static/media/3249EE_0_0.ttf": "/sketch-synth/static/media/3249EE_0_0.b124b86026d39f6ef021.ttf",
     "static/media/3249EE_0_0.woff": "/sketch-synth/static/media/3249EE_0_0.9cd4731402604f67bc13.woff",
@@ -9,11 +9,11 @@
     "static/media/3249EE_0_0.eot": "/sketch-synth/static/media/3249EE_0_0.e47d6ccd57eabf3b3ad8.eot",
     "index.html": "/sketch-synth/index.html",
     "main.f0fb9c27.css.map": "/sketch-synth/static/css/main.f0fb9c27.css.map",
-    "main.93a8114c.js.map": "/sketch-synth/static/js/main.93a8114c.js.map",
+    "main.9a623fd4.js.map": "/sketch-synth/static/js/main.9a623fd4.js.map",
     "787.5ff1569e.chunk.js.map": "/sketch-synth/static/js/787.5ff1569e.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.f0fb9c27.css",
-    "static/js/main.93a8114c.js"
+    "static/js/main.9a623fd4.js"
   ]
 }
