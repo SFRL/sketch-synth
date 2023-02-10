@@ -9,10 +9,8 @@ import * as tf from "@tensorflow/tfjs";
 let model;
 
 const loadModel = async () => {
-    // const networkInterfaces = os.networkInterfaces();
-    // const ip = networkInterfaces["eth0"][0]["address"];
     await tf
-      .loadLayersModel(`https://sfrl.github.io/sketch-synth/model/model.json`)
+      .loadLayersModel("https://sketchsynth.com/model/model.json")
       .then((result) => {
         model = result;
       })

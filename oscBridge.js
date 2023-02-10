@@ -15,4 +15,5 @@ const osc = new OSC({ plugin: new OSC.BridgePlugin(config) });
 console.log("Start OSC bridge!")
 osc.open();
 
-osc.on('/speed',(message)=>console.log(message))
+// uncomment to check if messages are received from interface
+// osc.on('/speed',(message)=>console.log(message))

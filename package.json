@@ -1,7 +1,7 @@
 {
-  "name": "sketch-synth",
+  "name": "sketchsynth",
   "version": "0.1.0",
-  "homepage": "https://gitname.github.io/sketch-synth",
+  "homepage": "https://sketchsynth.com",
   "private": true,
   "dependencies": {
     "@material-ui/core": "^4.12.3",
