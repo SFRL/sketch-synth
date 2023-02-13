@@ -13,9 +13,12 @@ const SketchSynthInterface = (props) => {
   const [reset, setReset] = useState(0);
   // Initialise sketch object (height and width will be set to true value in the setup function inside DrawingInterface)
   const [sketch, setSketch] = useState(new Sketch());
-  const [oscWebSocket, setOscWebSocket] = useState(
+  const [osc, setOsc] = useState(
     new OSC()
   );
+  const [oscStatus, setOscStatus] = useState(-2);
+
+  useEffect(() => osc.open({ host: props.oscHost, port: 8080, secure: false }),[osc]);
 
   useEffect(() => {
     // Re-render sketch when window size is changed, use debounce to prevent triggering too many re-renders
@@ -29,9 +32,8 @@ const SketchSynthInterface = (props) => {
   return (
     <>
       <ControlPanel 
-        sketch={sketch} 
-        osc={oscWebSocket} 
-        oscHost={props.oscHost}
+        sketch={sketch}
+        osc={osc}
       />
       <P5Sketch
         sketch={sketch}

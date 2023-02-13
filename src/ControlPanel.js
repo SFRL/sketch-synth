@@ -64,7 +64,7 @@ const analyseSketch = async (sketch,canvas) => {
 }
 
 
-const ControlPanel = ({sketch, osc, oscHost}) => {
+const ControlPanel = ({sketch, osc, oscStatusId}) => {
   const [analysis, setAnalysis] = useState({
     noisy: undefined,
     thin: undefined,
@@ -84,9 +84,10 @@ const ControlPanel = ({sketch, osc, oscHost}) => {
 
   const processedImage = useRef(null);
 
-  useEffect(()=>{
-    osc.open({ host: oscHost, port: 8080 });
-  },[osc,oscHost])
+  // useEffect(()=>{
+  //   osc.open();
+  //   // setOscOpen(true);
+  // },[osc])
   
   useEffect(() => {
     const getPrediction = () => {
@@ -99,7 +100,7 @@ const ControlPanel = ({sketch, osc, oscHost}) => {
           
           // Send data via Websocket OSC
           Object.keys(analysis).forEach((key)=> {
-            if (typeof analysis[key] !== "undefined") {
+            if (typeof analysis[key] !== "undefined" && osc.status()===1) {
               const message = new OSC.Message(`/${key}`, analysis[key]);
               osc.send(message);
             }
@@ -111,6 +112,7 @@ const ControlPanel = ({sketch, osc, oscHost}) => {
         getPrediction();
       },100);
   }, [sketch, analysis, osc, setAnalysis]);
+
 
   const content = displayPanel ? (
     <div className="control-panel expanded">
