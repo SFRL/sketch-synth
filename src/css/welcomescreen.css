@@ -8,6 +8,8 @@
 
 .welcome > div {
     background-color: #FFFAFA;
+    width: 95%;
+    max-width: 1000px;
     color: black;
     border: 2px solid black;
     padding: 1rem;

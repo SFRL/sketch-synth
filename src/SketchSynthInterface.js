@@ -18,7 +18,7 @@ const SketchSynthInterface = (props) => {
   );
   const [oscStatus, setOscStatus] = useState(-2);
 
-  useEffect(() => osc.open({ host: props.oscHost, port: 8080, secure: false }),[osc]);
+  useEffect(() => osc.open({ host: props.oscHost, port: 8080, secure: props.https}),[osc, props.oscHost, props.https]);
 
   useEffect(() => {
     // Re-render sketch when window size is changed, use debounce to prevent triggering too many re-renders

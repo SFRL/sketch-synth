@@ -83,11 +83,6 @@ const ControlPanel = ({sketch, osc, oscStatusId}) => {
   const toggleDisplay = (val) => setDisplayPanel(val);
 
   const processedImage = useRef(null);
-
-  // useEffect(()=>{
-  //   osc.open();
-  //   // setOscOpen(true);
-  // },[osc])
   
   useEffect(() => {
     const getPrediction = () => {
