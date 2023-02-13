@@ -15,7 +15,7 @@ const App = () => {
   const ipInputRef = useRef(null);
   // Use cookies to remember ip
   const [ipCookie, setIpCookie] = useCookies(['hostIp']);
-  const [https,setHttps] = useState(window.location.protocol === "https");
+  const [https,setHttps] = useState(window.location.protocol === "https:");
   const [oscHost, setOscHost] = useState(ipCookie.hostIp || "localhost");
 
   // Get descriptors from server and generate study pages
@@ -37,6 +37,7 @@ const App = () => {
   }, [loaded, setLoaded]);
 
   useEffect(()=>{
+    console.log(https);
     console.log(window.location.protocol);   
     console.log(oscHost)
   })
@@ -57,7 +58,7 @@ const App = () => {
             <strong>WARNING:</strong> OSC connection inside a local network is
             not currently supported for HTTPS. Please go to{" "}
             <a href="http://sketchsynth.com">http://sketchsynth.com</a> instead.
-            Please note that some browser automatically redirect to HTTPS, we
+            Please note that some browsers automatically redirect to HTTPS, we
             found that HTTP works well on Safari.
           </p>
         ) : undefined}
