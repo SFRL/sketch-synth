@@ -64,8 +64,8 @@ const App = () => {
         ) : undefined}
         <p>
           You can connect the SketchSynth to an Digital Audio Workstation (DAW)
-          via OSC. For Ableton Live you can download a OSC
-          receiver Max4Live patch{" "}
+          via OSC. For Ableton Live you can download a OSC receiver Max4Live
+          patch{" "}
           <a
             href="https://drive.google.com/file/d/1Emau3V3s_01kmxYld6IX5TofY7Ff4XhJ/view?usp=share_link"
             target="_blank"
@@ -73,8 +73,20 @@ const App = () => {
           >
             here{" "}
           </a>
+          . You can watch a demonstration of SketchSynth on{" "}
+          <a
+            href="https://youtu.be/arSFt3iBAUM"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            YouTube
+          </a>
+          .
         </p>
-        <p>Please enter the local network IP address of the machine that runs your OSC receiver.</p>
+        <p>
+          Please enter the local network IP address of the machine that runs
+          your OSC receiver.
+        </p>
         <p>
           <input
             ref={ipInputRef}
