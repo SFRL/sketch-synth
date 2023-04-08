@@ -121,6 +121,19 @@ class Sketch {
     return [minX, minY, Math.max(maxX - minX, 0), Math.max(maxY - minY, 0)];
   }
 
+  // Get slice of last n points in current stroke 
+  getCurrentSlice(limit=10) {
+    const stroke = this.strokes[this.length-1];
+    if (!stroke || !stroke.isSketching) return {"x":[],"y":[]};
+    // Get last n points according to limit
+    const [X,Y] = [
+      stroke.x.slice(Math.max(stroke.length - limit,0)),
+      stroke.y.slice(Math.max(stroke.length - limit, 0))
+    ]
+    // Return current slice
+    return {"x":X,"y":Y}
+  }
+
   // Calculate sketching speed 
   getCurrentSpeed(limit=5,scale=true) {
     const stroke = this.strokes[this.length - 1];

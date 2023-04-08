@@ -5,20 +5,30 @@ import * as tf from "@tensorflow/tfjs";
 // import { norm } from "@tensorflow/tfjs";
 // import { mode } from "./init";
 
-// The prediction model
-let model;
+// The prediction models
+let soundSketchClassifier; 
+let sketchFeatureClassifier;
 
 const loadModel = async () => {
     await tf
-      .loadLayersModel("https://sketchsynth.com/model/model.json")
+      .loadLayersModel("http://localhost:5500/public/sound_sketch_classifier/model.json")
       .then((result) => {
-        model = result;
+        soundSketchClassifier = result;
       })
       .catch((error) => {
-        console.log(error);
+        alert(`Could not load Sound Sketch model with error: ${error}`);
+      });
+    
+    await tf
+      .loadLayersModel( "http://localhost:5500/public/sketch_feature_classifier/model.json")
+      .then((result) => {
+        sketchFeatureClassifier = result;
+      })
+      .catch((error) => {
+        alert(`Could not load Sketch Feature model with error: ${error}`);
       });
 
-    return model?true:false
+    return soundSketchClassifier && sketchFeatureClassifier ? true : false;
 };
 
 // Get bounding box of sketch, cut sketch from canvas and rescale to fit cnn input
@@ -81,6 +91,29 @@ const preprocessSketch = (imgData, returnCanvas = undefined, invert = false) => 
   });
 };
 
+const calculateBoundingBox = (strokes) => {
+  let [xMin, yMin, xMax, yMax] = [10000000, 10000000, 0, 0];
+  strokes.forEach((stroke)=> {
+      stroke.x.forEach((x) => {
+      if (x<xMin) {
+        xMin = x
+      }
+      else if (x>xMax) {
+        xMax = x
+      }
+      });
+      stroke.y.forEach((y) => {
+        if (y < yMin) {
+          yMin = y;
+        } else if (y > yMax) {
+          yMax = y;
+        }
+      });
+  })
+  
+  return [xMin,yMin,xMax-xMin,yMax-yMax]
+}
+
 const rescale = (c,offset,scale) => (c-offset)*scale;
 
 const createSketchImage = (strokes,x,y,l,h,dimX=28,dimY=28) => {
@@ -115,12 +148,31 @@ const createSketchImage = (strokes,x,y,l,h,dimX=28,dimY=28) => {
   return imgData
 }
 
-// Make prediction
-const makePrediction = async (preprocessed) => {
-  const [out1,out2] = model.predict(preprocessed);
+// Make prediction for sound sketch classifier (noisy/calm, thin/thick)
+const makeSoundSketchPrediction = async (preprocessed) => {
+  const [out1, out2] = soundSketchClassifier.predict(preprocessed);
   const noisyCalm = await out1.data();
   const thinThick = await out2.data(); 
   return [noisyCalm[0],thinThick[0]];
 };
 
-export { loadModel, makePrediction, extractSketch, createSketchImage, preprocessSketch };
+// Make prediction for sketch feature classifier (acute angle, curve, obtuse angle, straight line)
+
+const featureNames = ["Line","Curve","Acute","Obtuse"]
+const makeSketchFeaturePrediction = async (preprocessed) => {
+  const out = sketchFeatureClassifier.predict(preprocessed);
+  const data = await out.data();
+  // Get index with highest value
+  const prediction = data.reduce((prediction,current,i)=>current>prediction[0]?[current,featureNames[i]]:prediction,[0,-1])
+  return prediction
+}
+
+export {
+  loadModel,
+  makeSoundSketchPrediction,
+  makeSketchFeaturePrediction,
+  extractSketch,
+  createSketchImage,
+  preprocessSketch,
+  calculateBoundingBox,
+};
