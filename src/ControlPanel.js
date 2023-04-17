@@ -152,7 +152,7 @@ const ControlPanel = ({sketch, osc, oscStatusId}) => {
         <div className="canvas-container">
           <canvas id="processedslice" ref={processedSlice}></canvas>
         </div>
-        <p style={{ textAlign: "center" }}>CNN slice input</p>
+        <p style={{textAlign: "center"}}>CNN slice input</p>
       </div>
 
       <div className="feature-display">
@@ -168,27 +168,20 @@ const ControlPanel = ({sketch, osc, oscStatusId}) => {
         <span>Length: {analysis.length}</span>
         {getOSCstatus(osc.status())}
       </div>
+      <div>
+        {
+        sketch ? 
+        Object.keys(sketch.featureColours).map((feature) => {
+          const colour = sketch.featureColours[feature];
+          return <div key={feature} style={{"backgroundColor":`rgb(${colour[0]},${colour[1]},${colour[2]})`}}>{feature}</div>
+        })
+        : undefined   
+      }
+      </div>
     </div>
   ) : (
     <div className="control-panel">
       <InfoRounded onClick={() => toggleDisplay(true)} />
-      <div>
-        {sketch
-          ? Object.keys(sketch.featureColours).map((feature) => {
-              const colour = sketch.featureColours[feature];
-              return (
-                <div
-                  key={feature}
-                  style={{
-                    backgroundColor: `rgb(${colour[0]},${colour[1]},${colour[2]})`,
-                  }}
-                >
-                  {feature}
-                </div>
-              );
-            })
-          : undefined}
-      </div>
     </div>
   );
 
