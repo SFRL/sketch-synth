@@ -245,9 +245,9 @@ class Stroke {
   }
 
   updateFeatureCategory(feature=[0 ,"None"],index) {
-      const [newProbability,newCategory] = feature;
+      const newProbability = feature[0];
       // Retrieve entry for index 
-      const [probability,cateory] = this.featureCategory[index];
+      const probability = this.featureCategory[index][0];
       // Update entry if new probability is higher
       if (newProbability > probability) {
         this.featureCategory[index] = feature;
