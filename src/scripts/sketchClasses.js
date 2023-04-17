@@ -27,6 +27,16 @@ class Sketch {
     // Array holding indices of corner points
     this.cornerCoords = { x: [], y: [] };
     this.shortstraw = undefined;
+
+    //Colours
+    this.lineColour = [0, 0, 0];
+    this.featureColours = this.featureColours || {
+      Acute: [255, 0, 0],
+      Obtuse: [0, 255, 0],
+      Curve: [0, 0, 255],
+      Line: [255, 255, 0],
+      None: this.lineColour,
+    };
   }
 
   // Set canvas element
@@ -92,9 +102,9 @@ class Sketch {
     this.cornerCoords.y = cornerCoords.y;
   }
 
-  drawSketch(p, currentTime, simplified) {
+  drawSketch(p, currentTime, simplified=false, showFeatures=false) {
     this.strokes.forEach((stroke) =>
-      stroke.drawStroke(p, currentTime, simplified)
+      stroke.drawStroke(p, currentTime, simplified, showFeatures)
     );
     this.removeAllEmptyStrokes();
   }
@@ -124,14 +134,16 @@ class Sketch {
   // Get slice of last n points in current stroke 
   getCurrentSlice(limit=10) {
     const stroke = this.strokes[this.length-1];
-    if (!stroke || !stroke.isSketching) return {"x":[],"y":[]};
+    if (!stroke || !stroke.isSketching) return {"x":[],"y":[],"stroke": stroke, "indices": []};
     // Get last n points according to limit
     const [X,Y] = [
       stroke.x.slice(Math.max(stroke.length - limit,0)),
       stroke.y.slice(Math.max(stroke.length - limit, 0))
     ]
+    // Calculate indices of points in the slice
+    const indices = X.map((_,index)=>Math.max(stroke.length - limit,0)+index)
     // Return current slice
-    return {"x":X,"y":Y}
+    return {"x":X,"y":Y,"stroke": stroke, "indices": indices}
   }
 
   // Calculate sketching speed 
@@ -205,6 +217,7 @@ class Stroke {
     this.lineColour = lineColour || [0, 0, 0];
     this.blendColour = blendColour || [255, 255, 255];
     this.lineWidth = lineWidth || 6;
+    this.featureColours = this.featureColours || {"Acute": [255, 0, 0], "Obtuse": [0, 255, 0], "Curve": [0, 0, 255], "Line": [255, 255, 0], "None": lineColour}
     // Number of all original points
     this.length = 0;
     // Does the stroke have a opacity above 0
@@ -212,6 +225,9 @@ class Stroke {
     this.decay = decay || 0.0025;
     // flag if stroke is currently drawn
     this.isSketching = true;
+
+    // keep track of sketch feature predictions
+    this.featureCategory = [];
   }
 
   addPoint(x_, y_, time_) {
@@ -222,8 +238,20 @@ class Stroke {
     this.x.push(x_);
     this.y.push(y_);
     this.time.push(time_);
+    // Add empty feature category which will be updated later
+    this.featureCategory.push([0,"None"]); // [probability, category]
     this.length++;
     return true;
+  }
+
+  updateFeatureCategory(feature=[0 ,"None"],index) {
+      const [newProbability,newCategory] = feature;
+      // Retrieve entry for index 
+      const [probability,cateory] = this.featureCategory[index];
+      // Update entry if new probability is higher
+      if (newProbability > probability) {
+        this.featureCategory[index] = feature;
+      }
   }
 
   removeFirstPoint() {
@@ -231,6 +259,7 @@ class Stroke {
       this.x.shift();
       this.y.shift();
       this.time.shift();
+      this.featureCategory.shift();
       this.length--;
     }
   }
@@ -244,6 +273,7 @@ class Stroke {
     this.sy = [];
     //Time stamp
     this.time = [];
+    this.featureCategory = [];
     // Number of all original points
     this.length = 0;
   }
@@ -252,7 +282,7 @@ class Stroke {
     [this.sx, this.sy] = simplifyPath(this.x, this.y, epsilon);
   }
 
-  drawStroke(p, currentTime, simplified) {
+  drawStroke(p, currentTime, simplified,showFeatures=false) {
     // Choose between simplified and original points
     let l, x, y;
     [l, x, y] = simplified
@@ -263,7 +293,11 @@ class Stroke {
 
     for (let i = 0; i < this.length; i++) {
       const fade = Math.min((currentTime - this.time[i]) * this.decay, 1);
-      const fadedColour = this.lineColour.map(
+
+      // Choose colour based on feature category is activated
+      const lineColour = showFeatures ? this.featureColours[this.featureCategory[i][1]] : this.lineColour;
+
+      const fadedColour = lineColour.map(
         (c, i) => c - (c - this.blendColour[i]) * fade
       );
       // Remove point if it's no-longer visible

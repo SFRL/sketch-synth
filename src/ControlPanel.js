@@ -67,9 +67,12 @@ const analyseSketch = async (sketch,sketchCanvas,sliceCanvas) => {
 
   const feature = currentSlice.x.length>0?await makeSketchFeaturePrediction(processedSliceImg):[0,"None"]
 
-  console.log(feature)
+  // Update feature categories for stroke
+  const stroke = currentSlice.stroke;
+  currentSlice.indices.forEach((i) => {
+    stroke.updateFeatureCategory(feature,i);
+  });
 
-  
   const speed = sketch.getCurrentSpeed(3, true);
   const centerX = (x + 0.5*l)/sketch.width;
   const centerY = 1-(y + 0.5*h)/sketch.height;
@@ -149,7 +152,7 @@ const ControlPanel = ({sketch, osc, oscStatusId}) => {
         <div className="canvas-container">
           <canvas id="processedslice" ref={processedSlice}></canvas>
         </div>
-        <p style={{textAlign: "center"}}>CNN slice input</p>
+        <p style={{ textAlign: "center" }}>CNN slice input</p>
       </div>
 
       <div className="feature-display">
@@ -169,6 +172,23 @@ const ControlPanel = ({sketch, osc, oscStatusId}) => {
   ) : (
     <div className="control-panel">
       <InfoRounded onClick={() => toggleDisplay(true)} />
+      <div>
+        {sketch
+          ? Object.keys(sketch.featureColours).map((feature) => {
+              const colour = sketch.featureColours[feature];
+              return (
+                <div
+                  key={feature}
+                  style={{
+                    backgroundColor: `rgb(${colour[0]},${colour[1]},${colour[2]})`,
+                  }}
+                >
+                  {feature}
+                </div>
+              );
+            })
+          : undefined}
+      </div>
     </div>
   );
 

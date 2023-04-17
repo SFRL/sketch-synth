@@ -174,7 +174,7 @@ function P5Sketch(props) {
       currentSketch.updateTotalStrokeLength();
 
       // Draw sketch
-      currentSketch.drawSketch(p, p.millis(), true);
+      currentSketch.drawSketch(p, p.millis(), true, true);
 
       // Draw corner points
       // currentSketch.drawCornerPoints(p);
