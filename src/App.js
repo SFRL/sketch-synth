@@ -28,9 +28,6 @@ const App = () => {
             setLoaded(true);
             console.log("Model loaded");
           }
-          else {
-            alert("Something went wrong. Could not load model."); 
-          }
         })
         .catch((error) => console.log("Could not load model."));
     }

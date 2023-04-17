@@ -4,7 +4,9 @@ import { HighlightOff, InfoRounded } from "@material-ui/icons";
 import {
   createSketchImage,
   preprocessSketch,
-  makePrediction,
+  makeSoundSketchPrediction,
+  makeSketchFeaturePrediction,
+  calculateBoundingBox
 } from "./scripts/tensorflowModel";
 import "./css/controlpanel.css";
 
@@ -36,14 +38,40 @@ const getOSCstatus = (statusID) => {
   }
 }
 
-
-const analyseSketch = async (sketch,canvas) => {
+const analyseSketch = async (sketch,sketchCanvas,sliceCanvas) => {
   if (!sketch) return { noisy: 0.5, thin: 0.5, synthId: undefined, cornerPoints: [] };
 
+
+  // Make sound-sketch prediction from the whole sketch 
   const [x,y,l,h] = sketch.getBoundingBox();
   const canvasSlice = createSketchImage(sketch.strokes,x,y,l,h,100,100);
-  const processedSketchImg = preprocessSketch(canvasSlice, canvas);
-  const [noisy, thin] = await makePrediction(processedSketchImg);
+  const processedSketchImg = preprocessSketch(canvasSlice, sketchCanvas);
+  const [noisy, thin] = await makeSoundSketchPrediction(processedSketchImg);
+
+  // Make sketch feature prediction from last n points: 
+  // get current slice
+  const currentSlice = sketch.getCurrentSlice(15)
+  const [xSlice, ySlice, lSlice, hSlice] = calculateBoundingBox([
+    currentSlice,
+  ]);
+  const canvasOfSlice = createSketchImage(
+    [currentSlice],
+    xSlice,
+    ySlice,
+    lSlice,
+    hSlice,
+    100,
+    100
+  );
+  const processedSliceImg = preprocessSketch(canvasOfSlice, sliceCanvas);
+
+  const feature = currentSlice.x.length>0?await makeSketchFeaturePrediction(processedSliceImg):[0,"None"]
+
+  // Update feature categories for stroke
+  const stroke = currentSlice.stroke;
+  currentSlice.indices.forEach((i) => {
+    stroke.updateFeatureCategory(feature,i);
+  });
 
   const speed = sketch.getCurrentSpeed(3, true);
   const centerX = (x + 0.5*l)/sketch.width;
@@ -53,7 +81,7 @@ const analyseSketch = async (sketch,canvas) => {
   return { 
     noisy: noisy, 
     thin: thin, 
-    acuteAngles: sketch.shortstraw ? sketch.shortstraw[2].acute : undefined, 
+    feature: feature[1], 
     speed: speed, 
     centerX: centerX, 
     centerY: centerY, 
@@ -68,7 +96,7 @@ const ControlPanel = ({sketch, osc, oscStatusId}) => {
   const [analysis, setAnalysis] = useState({
     noisy: undefined,
     thin: undefined,
-    acuteAngles: undefined,
+    feature: undefined,
     speed: undefined,
     centerX: undefined,
     centerY: undefined,
@@ -83,12 +111,14 @@ const ControlPanel = ({sketch, osc, oscStatusId}) => {
   const toggleDisplay = (val) => setDisplayPanel(val);
 
   const processedImage = useRef(null);
+  const processedSlice = useRef(null);
   
   useEffect(() => {
     const getPrediction = () => {
       analyseSketch(
         sketch,
         processedImage.current,
+        processedSlice.current
       )
         .then((analysis) => {
           setAnalysis(analysis)
@@ -118,11 +148,17 @@ const ControlPanel = ({sketch, osc, oscStatusId}) => {
         </div>
         <p style={{ textAlign: "center" }}>CNN input</p>
       </div>
+      <div>
+        <div className="canvas-container">
+          <canvas id="processedslice" ref={processedSlice}></canvas>
+        </div>
+        <p style={{textAlign: "center"}}>CNN slice input</p>
+      </div>
 
       <div className="feature-display">
         <span>Noisy: {`${analysis.noisy?.toFixed(3)}`}</span>
         <span>Thin: {`${analysis.thin?.toFixed(3)}`}</span>
-        <span>Acute angles: {analysis.acuteAngles}</span>
+        <span>Feature: {analysis.feature}</span>
         <span>Speed: {`${analysis.speed?.toFixed(3)}`}</span>
         <span>CenterX: {`${analysis.centerX?.toFixed(3)}`}</span>
         <span>CenterY: {`${analysis.centerY?.toFixed(3)}`}</span>
@@ -131,6 +167,16 @@ const ControlPanel = ({sketch, osc, oscStatusId}) => {
         <span>Strokes: {analysis.strokes}</span>
         <span>Length: {analysis.length}</span>
         {getOSCstatus(osc.status())}
+      </div>
+      <div>
+        {
+        sketch ? 
+        Object.keys(sketch.featureColours).map((feature) => {
+          const colour = sketch.featureColours[feature];
+          return <div key={feature} style={{"backgroundColor":`rgb(${colour[0]},${colour[1]},${colour[2]})`}}>{feature}</div>
+        })
+        : undefined   
+      }
       </div>
     </div>
   ) : (
