@@ -10,7 +10,13 @@ const eucledianDistance = (p1, p2) =>
 
 // Class for whole sketch
 class Sketch {
-  constructor(w, h, t, canvas) {
+  constructor(w, h, t, canvas, lineColour=[0,0,0], blendColour=[255,255,255], featureColours={
+      Acute: [255, 0, 0],
+      Obtuse: [0, 255, 0],
+      Curve: [0, 0, 255],
+      Line: [255, 255, 0],
+      None: [0,0,0],
+    } ,lineWidth=6, decay=0.0001) {
     //Array to hold strokes
     this.strokes = [];
     // Canvas Element
@@ -29,14 +35,15 @@ class Sketch {
     this.shortstraw = undefined;
 
     //Colours
-    this.lineColour = [0, 0, 0];
-    this.featureColours = this.featureColours || {
-      Acute: [255, 0, 0],
-      Obtuse: [0, 255, 0],
-      Curve: [0, 0, 255],
-      Line: [255, 255, 0],
-      None: this.lineColour,
-    };
+    this.lineColour = lineColour;
+    this.blendColour = blendColour;
+    this.featureColours = featureColours;
+
+    // Line width
+    this.lineWidth = lineWidth;
+
+    // Time it takes for a stroke to fade away
+    this.decay = decay;
   }
 
   // Set canvas element
@@ -104,7 +111,7 @@ class Sketch {
 
   drawSketch(p, currentTime, simplified=false, showFeatures=false) {
     this.strokes.forEach((stroke) =>
-      stroke.drawStroke(p, currentTime, simplified, showFeatures)
+      stroke.drawStroke(p, currentTime, simplified, this.lineWidth, this.lineColour,this.featureColours,this.blendColour, this.decay, showFeatures)
     );
     this.removeAllEmptyStrokes();
   }
@@ -213,11 +220,6 @@ class Stroke {
     this.sy = [];
     //Time stamp
     this.time = [];
-    // Appearance
-    this.lineColour = lineColour || [0, 0, 0];
-    this.blendColour = blendColour || [255, 255, 255];
-    this.lineWidth = lineWidth || 6;
-    this.featureColours = this.featureColours || {"Acute": [255, 0, 0], "Obtuse": [0, 255, 0], "Curve": [0, 0, 255], "Line": [255, 255, 0], "None": lineColour}
     // Number of all original points
     this.length = 0;
     // Does the stroke have a opacity above 0
@@ -225,7 +227,6 @@ class Stroke {
     this.decay = decay || 0.0025;
     // flag if stroke is currently drawn
     this.isSketching = true;
-
     // keep track of sketch feature predictions
     this.featureCategory = [];
   }
@@ -282,23 +283,23 @@ class Stroke {
     [this.sx, this.sy] = simplifyPath(this.x, this.y, epsilon);
   }
 
-  drawStroke(p, currentTime, simplified,showFeatures=false) {
+  drawStroke(p, currentTime, simplified,lineWidth,lineColour,featureColours,blendColour,decay,showFeatures=false) {
     // Choose between simplified and original points
     let l, x, y;
     [l, x, y] = simplified
       ? [this.sx.length, this.sx, this.sy]
       : [this.length, this.x, this.y];
 
-    p.strokeWeight(this.lineWidth);
+    p.strokeWeight(lineWidth);
 
     for (let i = 0; i < this.length; i++) {
-      const fade = Math.min((currentTime - this.time[i]) * this.decay, 1);
+      const fade = Math.min((currentTime - this.time[i]) * decay, 1);
 
       // Choose colour based on feature category is activated
-      const lineColour = showFeatures ? this.featureColours[this.featureCategory[i][1]] : this.lineColour;
+      const colour = showFeatures ? featureColours[this.featureCategory[i][1]] : lineColour;
 
-      const fadedColour = lineColour.map(
-        (c, i) => c - (c - this.blendColour[i]) * fade
+      const fadedColour = colour.map(
+        (c, i) => c - (c - blendColour[i]) * fade
       );
       // Remove point if it's no-longer visible
       if (fade === 1) this.removeFirstPoint();
