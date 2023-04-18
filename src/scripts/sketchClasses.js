@@ -1,4 +1,3 @@
-import simplifyPath from "./RDP";
 import shortstraw from "./shortstraw";
 
 const eucledianDistance = (p1, p2) =>
@@ -39,7 +38,7 @@ class Sketch {
     this.blendColour = blendColour;
     this.featureColours = featureColours;
 
-    // Line width
+    // Stroke line width
     this.lineWidth = lineWidth;
 
     // Time it takes for a stroke to fade away
@@ -109,9 +108,9 @@ class Sketch {
     this.cornerCoords.y = cornerCoords.y;
   }
 
-  drawSketch(p, currentTime, simplified=false, showFeatures=false) {
+  drawSketch(p, currentTime, showFeatures=false) {
     this.strokes.forEach((stroke) =>
-      stroke.drawStroke(p, currentTime, simplified, this.lineWidth, this.lineColour,this.featureColours,this.blendColour, this.decay, showFeatures)
+      stroke.drawStroke(p, currentTime, this.lineWidth, this.lineColour,this.featureColours,this.blendColour, this.decay, showFeatures)
     );
     this.removeAllEmptyStrokes();
   }
@@ -215,9 +214,6 @@ class Stroke {
     //Original x and y position
     this.x = [];
     this.y = [];
-    //Simplified x and y position
-    this.sx = [];
-    this.sy = [];
     //Time stamp
     this.time = [];
     // Number of all original points
@@ -266,12 +262,9 @@ class Stroke {
   }
 
   clearData() {
-    //Original x and y position
+    //x and y position
     this.x = [];
     this.y = [];
-    //Simplified x and y position
-    this.sx = [];
-    this.sy = [];
     //Time stamp
     this.time = [];
     this.featureCategory = [];
@@ -279,17 +272,7 @@ class Stroke {
     this.length = 0;
   }
 
-  simplify(epsilon) {
-    [this.sx, this.sy] = simplifyPath(this.x, this.y, epsilon);
-  }
-
-  drawStroke(p, currentTime, simplified,lineWidth,lineColour,featureColours,blendColour,decay,showFeatures=false) {
-    // Choose between simplified and original points
-    let l, x, y;
-    [l, x, y] = simplified
-      ? [this.sx.length, this.sx, this.sy]
-      : [this.length, this.x, this.y];
-
+  drawStroke(p, currentTime,lineWidth,lineColour,featureColours,blendColour,decay,showFeatures=false) {
     p.strokeWeight(lineWidth);
 
     for (let i = 0; i < this.length; i++) {

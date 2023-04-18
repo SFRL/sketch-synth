@@ -161,8 +161,7 @@ function P5Sketch(props) {
       // pen is above the paper
       else if (justFinished) {
         // Simplify after stroke is finished
-        currentStroke.simplify(paras.rdp);
-        currentSketch.calculateCornerPoints();
+        // currentSketch.calculateCornerPoints();
         // Flag that stroke is finished sketching
         currentStroke.isSketching = false;
         // Add stroke to sketch
