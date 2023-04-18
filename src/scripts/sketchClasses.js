@@ -1,5 +1,3 @@
-import shortstraw from "./shortstraw";
-
 const eucledianDistance = (p1, p2) =>
   Math.sqrt(
     p1
@@ -29,9 +27,6 @@ class Sketch {
     this.length = 0;
     //Number of points (including stroke that has not been added to sketch yet)
     this.totalStrokeLength = 0;
-    // Array holding indices of corner points
-    this.cornerCoords = { x: [], y: [] };
-    this.shortstraw = undefined;
 
     //Colours
     this.lineColour = lineColour;
@@ -84,41 +79,11 @@ class Sketch {
     this.length = this.strokes.length;
   }
 
-  calculateCornerPoints() {
-    const shortstrawAnalysis = shortstraw(this.strokes);
-    const cornerIndices = shortstrawAnalysis[0];
-    const resampledData = shortstrawAnalysis[3];
-
-    const cornerCoords = { x: [], y: [] };
-
-    cornerIndices.forEach((array, i) => {
-      const stroke = resampledData[i];
-      array.forEach((index) => {
-        cornerCoords.x.push(stroke[0][index]);
-        cornerCoords.y.push(stroke[1][index]);
-      });
-    });
-
-    this.cornerCoords = cornerCoords;
-    this.shortstraw = shortstrawAnalysis;
-  }
-
-  updateCornerCoords(cornerCoords) {
-    this.cornerCoords.x = cornerCoords.x;
-    this.cornerCoords.y = cornerCoords.y;
-  }
-
   drawSketch(p, currentTime, showFeatures=false) {
     this.strokes.forEach((stroke) =>
       stroke.drawStroke(p, currentTime, this.lineWidth, this.lineColour,this.featureColours,this.blendColour, this.decay, showFeatures)
     );
     this.removeAllEmptyStrokes();
-  }
-
-  drawCornerPoints(p) {
-    p.stroke("red");
-    const [X, Y] = [this.cornerCoords.x, this.cornerCoords.y];
-    X.forEach((x, i) => p.point(x, Y[i]));
   }
 
   // Bounding box of sketch in format [x,y,w,h] (x/y position of top left corner and width and height of box)
