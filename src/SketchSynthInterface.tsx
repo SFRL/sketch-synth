@@ -3,7 +3,7 @@ import { debounce } from "lodash";
 import OSC from "osc-js";
 import P5Sketch from "./P5Sketch";
 import ControlPanel from "./ControlPanel";
-import { Sketch } from "./scripts/sketchClasses.ts";
+import { Sketch } from "./scripts/sketchClasses";
 import "./css/layout.css";
 import "./css/button.css";
 

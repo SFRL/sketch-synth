@@ -1,7 +1,7 @@
 import React from "react";
 import { useEffect, useRef, useState} from "react";
 import p5 from "p5";
-import { Stroke } from "./scripts/sketchClasses.ts";
+import { Stroke } from "./scripts/sketchClasses";
 import "./css/instructions.css";
 
 // ------------------- "GLOBAL" VARIABLES -----------------------
