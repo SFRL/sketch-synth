@@ -20,39 +20,6 @@ const tracking = {
   time: 0,
 };
 
-// ------------------- FUNCTIONS -----------------------
-
-const eucledianDistance = (p1, p2) =>
-  Math.sqrt(
-    p1
-      .map((p1val, i) => (p1val - p2[i]) ** 2)
-      .reduce((sum, current) => sum + current, 0)
-  );
-
-// Calculate sketching speed 
-const calculateSpeed = (stroke,limit=5,scale=[1,1]) => {
-  if (stroke.length < limit) return 0
-
-  // Get last n points according to limit
-  const [X, Y] = [
-    stroke.x.slice(stroke.length - limit),
-    stroke.y.slice(stroke.length - limit),
-  ];
-  // Get time difference between current point and 5 points back
-  const timePassed = stroke.time[stroke.length-1] - stroke.time[stroke.length-limit];
-
-  // Calculate eucledian distance between points
-  const distance = X.reduce((length,currentPoint,index)=> {
-    const [p1, p2] = [
-          [scale[0]*X[index], scale[1]*Y[index]],
-          [scale[0]*X[index - 1], scale[1]*Y[index - 1]],
-        ];
-    return index ? length + eucledianDistance(p1,p2) : 0
-},0)
-  
-  return distance/timePassed
-}
-
 // ------------------- REACT COMPONENT ------------------------------
 
 function P5Sketch(props) {
