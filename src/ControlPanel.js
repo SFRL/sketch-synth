@@ -65,7 +65,7 @@ const analyseSketch = async (sketch,sketchCanvas,sliceCanvas) => {
   );
   const processedSliceImg = preprocessSketch(canvasOfSlice, sliceCanvas);
 
-  const feature = currentSlice.x.length>0?await makeSketchFeaturePrediction(processedSliceImg):[0,"None"]
+  const feature = currentSlice.x.length>0?await makeSketchFeaturePrediction(processedSliceImg):{"probability":0,"category":"None"}
 
   // Update feature categories for stroke
   const stroke = currentSlice.stroke;
@@ -81,7 +81,7 @@ const analyseSketch = async (sketch,sketchCanvas,sliceCanvas) => {
   return { 
     noisy: noisy, 
     thin: thin, 
-    feature: feature[1], 
+    feature: feature.category, 
     speed: speed, 
     centerX: centerX, 
     centerY: centerY, 

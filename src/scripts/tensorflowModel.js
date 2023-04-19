@@ -1,9 +1,4 @@
 import * as tf from "@tensorflow/tfjs";
-// const os = require('os');
-
-
-// import { norm } from "@tensorflow/tfjs";
-// import { mode } from "./init";
 
 // The prediction models
 let soundSketchClassifier; 
@@ -163,7 +158,10 @@ const makeSketchFeaturePrediction = async (preprocessed) => {
   const out = sketchFeatureClassifier.predict(preprocessed);
   const data = await out.data();
   // Get index with highest value
-  const prediction = data.reduce((prediction,current,i)=>current>prediction[0]?[current,featureNames[i]]:prediction,[0,-1])
+  const prediction = data.reduce((prediction,current,i)=>(
+    current>prediction.probability?
+    {"probability":current,"category":featureNames[i]}:
+    prediction),{"probability":0,"category":"None"})
   return prediction
 }
 

@@ -6,24 +6,10 @@ import "./css/instructions.css";
 
 // ------------------- "GLOBAL" VARIABLES -----------------------
 
-//   General parameters that can be changed with react props
-const paras = {
-  rdp: 2,
-  maxLength: 150,
-  minLength: 20,
-  lineColour: [0, 0, 0],
-  blendColour: [255, 255, 255],
-  lineWidth: 6,
-  decay: 0.0001,
-};
+
 
 //Sketch and stroke objects
-let currentStroke = new Stroke(
-  paras.lineColour,
-  paras.lineWidth,
-  paras.blendColour,
-  paras.decay
-);
+let currentStroke = new Stroke();
 let justFinished = false;
 
 // tracking mouse touchpad and time
@@ -66,9 +52,6 @@ const calculateSpeed = (stroke,limit=5,scale=[1,1]) => {
   
   return distance/timePassed
 }
-
-// Clear Screen
-const clearScreen = (p) => p.background(paras.blendColour);
 
 // ------------------- REACT COMPONENT ------------------------------
 
@@ -114,37 +97,22 @@ function P5Sketch(props) {
       canvas.touchMoved(addPoint);
       
       p.frameRate(30);
-      if (!props.freeze) {
-        setFade(false);
-        clearScreen(p);
-      }
       // Set canvas element and size for this sketch instance
       currentSketch.setCanvas(canvas);
       currentSketch.setCanvasSize(w, h);
-
-      // Update parameters from props
-      for (let key in props) {
-        if (key in paras) {
-          paras[key] = props[key];
-        }
-      }
 
       console.log("p5 sketch loaded");
     };
 
     const draw = (p) => {
-      clearScreen(p);
+      // Clear background
+      p.background(currentSketch.blendColour);
       if (currentStroke.length === 0) setFade(false);
-      // record pen drawing from user, if sketch isn't frozen
-      if (tracking.down && !props.freeze) {
+      // record pen drawing from user
+      if (tracking.down) {
         if (!justFinished) {
           // Reset stroke by assigning variable to new stroke object
-          currentStroke = new Stroke(
-            paras.lineColour,
-            paras.lineWidth,
-            paras.blendColour,
-            paras.decay
-          );
+          currentStroke = new Stroke();
           currentSketch.addStroke(currentStroke);
           // Activate predictions
           justFinished = true;
@@ -171,15 +139,7 @@ function P5Sketch(props) {
       currentSketch.updateTotalStrokeLength();
 
       // Draw sketch
-      currentSketch.drawSketch(p, p.millis(), true, true);
-
-      // Draw corner points
-      // currentSketch.drawCornerPoints(p);
-
-      // Draw bounding box
-      // p.stroke("red");
-      // p.noFill();
-      // p.rect(...currentSketch.getBoundingBox());
+      currentSketch.drawSketch(p, p.millis(),true);
     };
 
     const sketchInstance = new p5((p) => {

@@ -1,3 +1,5 @@
+import * as p5 from 'p5';
+
 /**
  * Euclidean distance between two points in n dimensions
  * @param {Array<number>} p1 coodinates of first point
@@ -14,48 +16,18 @@ const euclideanDistance = (p1:Array<number>, p2:Array<number>) =>
 
 // Define typescript interfaces for sketch and stroke classes
 
+interface FeatureColours {
+  Acute: [number,number,number];
+  Obtuse: [number,number,number];
+  Curve: [number,number,number];
+  Line: [number,number,number];
+  None: [number,number,number];
+}
 interface Feature {
   probability: number;
-  category: string;
+  category: keyof FeatureColours;
 }
 
-interface FeatureColours {
-  Acute: Array<3>;
-  Obtuse: Array<3>;
-  Curve: Array<3>;
-  Line: Array<3>;
-  None: Array<3>;
-}
-
-// interface IStroke {
-//   x: Array<number>;
-//   y: Array<number>;
-//   time: Array<number>;
-//   length: number;
-//   visible: boolean;
-//   isSketching: boolean;
-//   features: Array<Feature>;
-// }
-// interface ISketch {
-//   strokes: Array<IStroke>;
-//   canvas: HTMLCanvasElement | null;
-//   width: number;
-//   height: number;
-//   time: number;
-//   length: number;
-//   totalStrokeLength: number;
-//   lineColour: Array<number>;
-//   blendColour: Array<number>;
-//   featureColours: {
-//     Acute: Array<number>;
-//     Obtuse: Array<number>;
-//     Curve: Array<number>;
-//     Line: Array<number>;
-//     None: Array<number>;
-//   };
-//   lineWidth: number;
-//   decay: number;
-// }
 
 // Class for individual strokes
 class Stroke {
@@ -66,21 +38,6 @@ class Stroke {
   visible: boolean = true;
   isSketching: boolean = true;
   featureCategory: Array<Feature> = [];
-  // constructor() {
-  //   //Original x and y position
-  //   this.x = [];
-  //   this.y = [];
-  //   //Time stamp
-  //   this.time = [];
-  //   // Number of all original points
-  //   this.length = 0;
-  //   // Does the stroke have a opacity above 0
-  //   this.visible = true;
-  //   // flag if stroke is currently drawn
-  //   this.isSketching = true;
-  //   // keep track of sketch feature predictions
-  //   this.featureCategory = [];
-  // }
 
   addPoint(x_:number, y_:number, time_:number) {
     //Only add point if it's at a different location than previous point
@@ -91,18 +48,18 @@ class Stroke {
     this.y.push(y_);
     this.time.push(time_);
     // Add empty feature category which will be updated later
-    this.featureCategory.push({probability: 0,category: "None"}); // [probability, category]
+    this.featureCategory.push({probability: 0,category: "None"}); 
     this.length++;
     return true;
   }
 
-  updateFeatureCategory(feature=[0 ,"None"],index:number) {
-      const newProbability = feature[0];
+  updateFeatureCategory(feature:Feature,index:number) {
+      const newProbability = feature.probability;
       // Retrieve entry for index 
       const probability = this.featureCategory[index]["probability"];
       // Update entry if new probability is higher
       if (newProbability > probability) {
-        this.featureCategory[index] = {probability: newProbability, category: feature[1]};
+        this.featureCategory[index] = feature;
       }
   }
 
@@ -127,13 +84,14 @@ class Stroke {
     this.length = 0;
   }
 
-  drawStroke(p, currentTime:number,lineWidth:number,lineColour:number,featureColours:FeatureColours,blendColour:Array<3>,decay:number,showFeatures=false) {
+  drawStroke(p:p5, currentTime:number,lineWidth:number,lineColour:[number,number,number],featureColours:FeatureColours,blendColour:[number,number,number],decay:number,showFeatures=false) {
     p.strokeWeight(lineWidth);
 
     for (let i = 0; i < this.length; i++) {
       const fade = Math.min((currentTime - this.time[i]) * decay, 1);
 
       // Choose colour based on feature category is activated
+      // TODO: figure out why this code runs super slowly when showFeatures is true
       const colour = showFeatures ? featureColours[this.featureCategory[i]["category"]] : lineColour;
 
       const fadedColour = colour.map(
@@ -145,13 +103,14 @@ class Stroke {
       p.stroke(fadedColour);
 
       // Retrieve 4 points for curve, make sure that index does not go below zero
-      const points = [];
+      const points: number[] = [];
       for (let j = 3; j >= 0; j--) {
         const idx = Math.max(i - j, 0);
-        points.push(this.x[idx]);
-        points.push(this.y[idx]);
+        points.push(this.x[idx]||0);
+        points.push(this.y[idx]||0);
       }
-      p.curve.apply(p, points);
+
+      p.curve(points[0], points[1], points[2], points[3], points[4], points[5], points[6], points[7]);
     }
   }
 }
@@ -168,34 +127,38 @@ class Stroke {
 * @param {number} lineWidth width of stroke lines
 * @param {number} decay time it takes for a stroke to fade away
 */
+
+const defaultFeatureColours:FeatureColours = {
+  Acute: [255, 0, 0],
+  Obtuse: [0, 255, 0],
+  Curve: [0, 0, 255],
+  Line: [255, 255, 0],
+  None: [255, 255, 255],
+};
 class Sketch{
+  width : number 
+  height : number;
+  time : number;
+  canvas: HTMLCanvasElement | null;
+  lineColour : [number,number,number];
+  blendColour : [number,number,number];
+  featureColours : FeatureColours;
+  strokes: Array<Stroke>;
+  length: number;
+  totalStrokeLength: number;
+  lineWidth: number;
+  decay: number;
   
-  constructor(
-    w: number,
-    h: number,
-    t: number,
-    canvas: HTMLCanvasElement | null,
-    lineColour = [0, 0, 0],
-    blendColour = [255, 255, 255],
-    featureColours = {
-      Acute: [255, 0, 0],
-      Obtuse: [0, 255, 0],
-      Curve: [0, 0, 255],
-      Line: [255, 255, 0],
-      None: [0, 0, 0],
-    },
-    lineWidth = 6,
-    decay = 0.0001
-  ) {
+  constructor( w=0, h=0, t=0, canvas=null, lineColour:[number,number,number]=[0,0,0], blendColour:[number,number,number]=[255,255,255], featureColours=defaultFeatureColours, lineWidth=6, decay=0.0001) {
     //Array to hold strokes
     this.strokes = [];
     // Canvas Element
-    this.canvas = canvas || null;
+    this.canvas = canvas;
     //Dimensions of canvas of sketch
-    this.width = w || 0;
-    this.height = h || 0;
+    this.width = w;
+    this.height = h;
     //Start time of sketch
-    this.time = t || 0;
+    this.time = t;
     //Number of strokes
     this.length = 0;
     //Number of points (including stroke that has not been added to sketch yet)
@@ -249,7 +212,7 @@ class Sketch{
     this.length = this.strokes.length;
   }
 
-  drawSketch(p, currentTime:number, showFeatures = false) {
+  drawSketch(p:p5, currentTime:number, showFeatures = false) {
     this.strokes.forEach((stroke) =>
       stroke.drawStroke(
         p,
@@ -336,10 +299,7 @@ class Sketch{
 
   // format data the same way as Quick, Draw! dataset for export
   getData() {
-    const sketch = [];
-    this.strokes.forEach((stroke) =>
-      sketch.push([stroke.x, stroke.y, stroke.time])
-    );
+    const sketch = this.strokes.map((stroke) => [stroke.x, stroke.y, stroke.time]);
 
     const sketchData = {
       canvas: this.canvas,
@@ -362,7 +322,5 @@ class Sketch{
     this.time = time;
   }
 }
-
-
 
 export { Sketch, Stroke };
