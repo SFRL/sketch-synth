@@ -149,7 +149,7 @@ class Sketch{
   lineWidth: number;
   decay: number;
   
-  constructor( w=0, h=0, t=0, canvas=null, lineColour:[number,number,number]=[0,0,0], blendColour:[number,number,number]=[255,255,255], featureColours=defaultFeatureColours, lineWidth=6, decay=0.0001) {
+  constructor( w=0, h=0, t=0, canvas=null, lineColour=[0,0,0], blendColour=[255,255,255], featureColours=defaultFeatureColours, lineWidth=6, decay=0.0001) {
     //Array to hold strokes
     this.strokes = [];
     // Canvas Element
