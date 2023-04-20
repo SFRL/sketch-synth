@@ -33,7 +33,7 @@ const extractSketch = (canvas, x, y, l, h) => {
 
 };
 
-const preprocessSketch = (imgData, returnCanvas = undefined, invert = false) => {
+const preprocessSketch = (imgData, returnCanvas:HTMLCanvasElement|null = null, invert = false) => {
   return tf.tidy(() => {
     //convert the image data to a tensor
     let tensor = tf.browser.fromPixels(imgData, 1);
