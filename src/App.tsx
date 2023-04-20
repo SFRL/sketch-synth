@@ -107,13 +107,7 @@ const App = () => {
     welcomeScreen
   ) : (
     <SketchSynthInterface
-      rdp={2}
-      minLength={20}
-      maxLength={150}
-      note={42}
-      autoplay={false}
       instructions={""}
-      key={"drawingInterface"}
       oscHost={oscHost}
       https={https}
     />
