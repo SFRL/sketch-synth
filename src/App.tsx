@@ -12,7 +12,7 @@ const App = () => {
   const [started, setStarted] = useState(false);
   
   // Get the ip of the OSC receiver from user input
-  const ipInputRef = useRef(null);
+  const ipInputRef = useRef<HTMLInputElement>(null);
   // Use cookies to remember ip
   const [ipCookie, setIpCookie] = useCookies(['hostIp']);
   const [https,setHttps] = useState(window.location.protocol === "https:");
