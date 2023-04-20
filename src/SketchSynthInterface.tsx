@@ -37,10 +37,6 @@ const SketchSynthInterface = (props) => {
       />
       <P5Sketch
         sketch={sketch}
-        rdp={props.rdp}
-        maxLength={props.maxLength}
-        minLength={props.minLength}
-        freeze={false}
         instructions={`Draw a ${props.instructions} sound`}
       />
     </>

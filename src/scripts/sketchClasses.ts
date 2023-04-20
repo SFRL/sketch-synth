@@ -120,7 +120,7 @@ class Stroke {
 * @param {number} w width of canvas
 * @param {number} h height of canvas
 * @param {number} t start time of sketch
-* @param {HTMLCanvasElement} canvas canvas element
+* @param {p5.Renderer} canvas canvas element
 * @param {Array<number>} lineColour colour of stroke lines
 * @param {Array<number>} blendColour colour of background that a line will fade into
 * @param {Object} featureColours colours that different features (angles, curves, lines etc) will be displayed in
@@ -139,7 +139,7 @@ class Sketch{
   width : number 
   height : number;
   time : number;
-  canvas: HTMLCanvasElement | null;
+  canvas: p5.Renderer | null;
   lineColour : [number,number,number];
   blendColour : [number,number,number];
   featureColours : FeatureColours;
@@ -174,7 +174,7 @@ class Sketch{
   }
 
   // Set canvas element
-  setCanvas(canvas: HTMLCanvasElement) {
+  setCanvas(canvas: p5.Renderer) {
     this.canvas = canvas;
   }
 
