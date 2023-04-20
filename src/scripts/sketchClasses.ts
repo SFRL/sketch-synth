@@ -324,3 +324,5 @@ class Sketch{
 }
 
 export { Sketch, Stroke };
+
+export type {FeatureColours}

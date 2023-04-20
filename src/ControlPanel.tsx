@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef} from "react";
 import OSC from "osc-js";
 import { HighlightOff, InfoRounded } from "@material-ui/icons";
-import { Sketch } from "./scripts/sketchClasses";
-import {analyseSketch} from "./scripts/analyseSketch";
+import { Sketch, FeatureColours } from "./scripts/sketchClasses";
+import {analyseSketch,defaultSketchAnalysis} from "./scripts/analyseSketch";
 import "./css/controlpanel.css";
 
 
@@ -33,16 +33,21 @@ const getOSCstatus = (statusID:number) => {
   }
 }
 
+type SketchAnalysis = typeof defaultSketchAnalysis;
+type featureType = keyof SketchAnalysis;
+const featureNames = Object.keys(defaultSketchAnalysis)
 
+const getFeatureDisplay = (feature:featureType,analysis:SketchAnalysis) => {
+  if (feature === "feature" || feature === "strokes" || feature === "length") return <span key={feature}>{feature}: {analysis[feature]}</span>
+  else return <span key={feature}>{feature}: {`${analysis[feature].toFixed(3)}`}</span>
+}
 
 
 const ControlPanel = ({sketch, osc}:{sketch:Sketch,osc:OSC}) => {
-  const [analysis, setAnalysis] = useState(analyseSketch(sketch));
-
+  // Object storing latest analysis of sketch (feature extraction)
+  const [analysis, setAnalysis] = useState<SketchAnalysis>(defaultSketchAnalysis);
+  // Display GUI for control panel
   const [displayPanel, setDisplayPanel] = useState(true);
-
-  const toggleDisplay = (val:boolean) => setDisplayPanel(val);
-
   const processedImage = useRef<HTMLCanvasElement>(null);
   const processedSlice = useRef<HTMLCanvasElement>(null);
   
@@ -57,12 +62,12 @@ const ControlPanel = ({sketch, osc}:{sketch:Sketch,osc:OSC}) => {
           setAnalysis(analysis)
           
           // Send data via Websocket OSC
-          Object.keys(analysis).forEach((key)=> {
-            if (typeof analysis[key] !== "undefined" && osc.status()===1) {
-              const message = new OSC.Message(`/${key}`, analysis[key]);
-              osc.send(message);
-            }
-          })
+          if (osc.status()===1) {
+            Object.keys(analysis).forEach((key)=> {
+                const message = new OSC.Message(`/${key}`, analysis[key as featureType]);
+                osc.send(message);
+            })
+          }
         })
         .catch((error) => console.log(error));
     };
@@ -74,7 +79,8 @@ const ControlPanel = ({sketch, osc}:{sketch:Sketch,osc:OSC}) => {
 
   const content = displayPanel ? (
     <div className="control-panel expanded">
-      <HighlightOff onClick={() => toggleDisplay(false)} />
+      <HighlightOff onClick={() => setDisplayPanel(false)} />
+      
       <div>
         <div className="canvas-container">
           <canvas id="processedimage" ref={processedImage}></canvas>
@@ -89,24 +95,15 @@ const ControlPanel = ({sketch, osc}:{sketch:Sketch,osc:OSC}) => {
       </div>
 
       <div className="feature-display">
-        <span>Noisy: {`${analysis.noisy?.toFixed(3)}`}</span>
-        <span>Thin: {`${analysis.thin?.toFixed(3)}`}</span>
-        <span>Feature: {analysis.feature}</span>
-        <span>Speed: {`${analysis.speed?.toFixed(3)}`}</span>
-        <span>CenterX: {`${analysis.centerX?.toFixed(3)}`}</span>
-        <span>CenterY: {`${analysis.centerY?.toFixed(3)}`}</span>
-        <span>Width: {`${analysis.width?.toFixed(3)}`}</span>
-        <span>Height: {`${analysis.height?.toFixed(3)}`}</span>
-        <span>Strokes: {analysis.strokes}</span>
-        <span>Length: {analysis.length}</span>
+        {Object.keys(analysis).map((feature) => getFeatureDisplay(feature as featureType,analysis))}
         {getOSCstatus(osc.status())}
       </div>
       <div>
         {
         sketch ? 
-        Object.keys(sketch.featureColours).map((feature) => {
-          const colour = sketch.featureColours[feature];
-          return <div key={feature} style={{"backgroundColor":`rgb(${colour[0]},${colour[1]},${colour[2]})`}}>{feature}</div>
+        Object.keys(sketch.featureColours).map((featureColour) => {
+          const colour = sketch.featureColours[featureColour as keyof FeatureColours];
+          return <div key={featureColour} style={{"backgroundColor":`rgb(${colour[0]},${colour[1]},${colour[2]})`}}>{featureColour}</div>
         })
         : undefined   
       }
@@ -114,7 +111,7 @@ const ControlPanel = ({sketch, osc}:{sketch:Sketch,osc:OSC}) => {
     </div>
   ) : (
     <div className="control-panel">
-      <InfoRounded onClick={() => toggleDisplay(true)} />
+      <InfoRounded onClick={() => setDisplayPanel(true)} />
     </div>
   );
 

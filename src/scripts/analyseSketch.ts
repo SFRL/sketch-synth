@@ -8,6 +8,20 @@ import {
 
 import { Sketch } from "./sketchClasses";
 
+
+const defaultSketchAnalysis = {
+    noisy: 0.5, 
+    thin: 0.5, 
+    feature: "None", 
+    speed: 0, 
+    centerX: 0.5, 
+    centerY: 0.5, 
+    width: 0, 
+    height: 0, 
+    strokes: 0, 
+    length: 0,
+};
+
 const analyseSketch = async (sketch:Sketch,sketchCanvas:HTMLCanvasElement|null=null,sliceCanvas:HTMLCanvasElement|null=null) => {
   // Make sound-sketch prediction from the whole sketch 
   const [x,y,l,h] = sketch.getBoundingBox();
@@ -58,4 +72,4 @@ const analyseSketch = async (sketch:Sketch,sketchCanvas:HTMLCanvasElement|null=n
     length: sketch.totalStrokeLength};
 }
 
-export {analyseSketch}
+export {analyseSketch,defaultSketchAnalysis}
