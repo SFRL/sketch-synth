@@ -30,7 +30,6 @@ const defaultSketchAnalysis = {
  * @returns {Feature} Feature object containing the feature category and probability
  */
 const sketchFeatureAnalysis = async (sketch:Sketch,canvas:HTMLCanvasElement|null,n=15) => {
-    // get current slice
     const currentSlice = sketch.getCurrentSlice(n)
     if (currentSlice.x.length===0) return {"probability":0,"category":"None"};
     const [xSlice, ySlice, lSlice, hSlice] = calculateBoundingBox([currentSlice]);
@@ -68,6 +67,7 @@ const sketchFeatureAnalysis = async (sketch:Sketch,canvas:HTMLCanvasElement|null
 const sketchCategoryAnalysis = async (sketch:Sketch,canvas:HTMLCanvasElement|null,x:number,y:number,l:number,h:number) => {
     // Make sound-sketch prediction from the whole sketch 
     const tempCanvas = createSketchImage(sketch.strokes,x,y,l,h,100,100);
+    if (!tempCanvas) return [0.5,0.5];
     const processedSketchImg = preprocessSketch(tempCanvas, canvas);
     return await makeSoundSketchPrediction(processedSketchImg);
 }
