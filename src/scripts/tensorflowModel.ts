@@ -1,12 +1,13 @@
 import * as tf from "@tensorflow/tfjs";
+import {Stroke,StrokeSlice} from "./sketchClasses";
 
 // The prediction models
-let soundSketchClassifier; 
-let sketchFeatureClassifier;
+let soundSketchClassifier : tf.LayersModel; 
+let sketchFeatureClassifier : tf.LayersModel;
 
 const loadModel = async () => {
     await tf
-      .loadLayersModel("http://localhost:5500/public/sound_sketch_classifier/model.json")
+      .loadLayersModel("http://192.168.1.116:5500/public/sound_sketch_classifier/model.json")
       .then((result) => {
         soundSketchClassifier = result;
       })
@@ -15,7 +16,7 @@ const loadModel = async () => {
       });
     
     await tf
-      .loadLayersModel( "http://localhost:5500/public/sketch_feature_classifier/model.json")
+      .loadLayersModel( "http://192.168.1.116:5500/public/sketch_feature_classifier/model.json")
       .then((result) => {
         sketchFeatureClassifier = result;
       })
@@ -24,13 +25,6 @@ const loadModel = async () => {
       });
 
     return soundSketchClassifier && sketchFeatureClassifier ? true : false;
-};
-
-// Get bounding box of sketch, cut sketch from canvas and rescale to fit cnn input
-const extractSketch = (canvas, x, y, l, h) => {
-  // console.log(canvas);
-  return canvas.drawingContext.getImageData( x, y, l, h)
-
 };
 
 const preprocessSketch = (imgData, returnCanvas:HTMLCanvasElement|null = null, invert = false) => {
@@ -86,7 +80,7 @@ const preprocessSketch = (imgData, returnCanvas:HTMLCanvasElement|null = null, i
   });
 };
 
-const calculateBoundingBox = (strokes) => {
+const calculateBoundingBox = (strokes:Array<Stroke>|Array<StrokeSlice>) => {
   let [xMin, yMin, xMax, yMax] = [10000000, 10000000, 0, 0];
   strokes.forEach((stroke)=> {
       stroke.x.forEach((x) => {
@@ -111,9 +105,10 @@ const calculateBoundingBox = (strokes) => {
 
 const rescale = (c,offset,scale) => (c-offset)*scale;
 
-const createSketchImage = (strokes,x,y,l,h,dimX=28,dimY=28) => {
+const createSketchImage = (strokes:Array<Stroke>|Array<StrokeSlice>,x:number,y:number,l:number,h:number,dimX=28,dimY=28) => {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
+  if (!ctx) return null;
   // Black background
   ctx.fillRect(0,0,dimX,dimY);
   
@@ -169,7 +164,6 @@ export {
   loadModel,
   makeSoundSketchPrediction,
   makeSketchFeaturePrediction,
-  extractSketch,
   createSketchImage,
   preprocessSketch,
   calculateBoundingBox,

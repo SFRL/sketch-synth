@@ -28,6 +28,13 @@ interface Feature {
   category: keyof FeatureColours;
 }
 
+interface StrokeSlice {
+  x: Array<number>;
+  y: Array<number>;
+  stroke: Stroke;
+  indices: Array<number>;
+}
+
 
 // Class for individual strokes
 class Stroke {
@@ -259,7 +266,7 @@ class Sketch{
       (_, index) => Math.max(stroke.length - limit, 0) + index
     );
     // Return current slice
-    return { x: X, y: Y, stroke: stroke, indices: indices };
+    return { x: X, y: Y, stroke: stroke, indices: indices } as StrokeSlice;
   }
 
   // Calculate sketching speed
@@ -325,4 +332,4 @@ class Sketch{
 
 export { Sketch, Stroke };
 
-export type {FeatureColours}
+export type {Feature,FeatureColours,StrokeSlice}
