@@ -12,7 +12,7 @@ const App = () => {
   const [started, setStarted] = useState(false);
   
   // Get the ip of the OSC receiver from user input
-  const ipInputRef = useRef(null);
+  const ipInputRef = useRef<HTMLInputElement>(null);
   // Use cookies to remember ip
   const [ipCookie, setIpCookie] = useCookies(['hostIp']);
   const [https,setHttps] = useState(window.location.protocol === "https:");
@@ -107,13 +107,7 @@ const App = () => {
     welcomeScreen
   ) : (
     <SketchSynthInterface
-      rdp={2}
-      minLength={20}
-      maxLength={150}
-      note={42}
-      autoplay={false}
       instructions={""}
-      key={"drawingInterface"}
       oscHost={oscHost}
       https={https}
     />

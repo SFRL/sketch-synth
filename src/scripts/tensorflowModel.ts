@@ -1,17 +1,13 @@
 import * as tf from "@tensorflow/tfjs";
-// const os = require('os');
-
-
-// import { norm } from "@tensorflow/tfjs";
-// import { mode } from "./init";
+import {Stroke,StrokeSlice,Feature} from "./sketchClasses";
 
 // The prediction models
-let soundSketchClassifier; 
-let sketchFeatureClassifier;
+let soundSketchClassifier : tf.LayersModel; 
+let sketchFeatureClassifier : tf.LayersModel;
 
 const loadModel = async () => {
     await tf
-      .loadLayersModel("http://localhost:5500/public/sound_sketch_classifier/model.json")
+      .loadLayersModel("http://192.168.1.116:5500/public/sound_sketch_classifier/model.json")
       .then((result) => {
         soundSketchClassifier = result;
       })
@@ -20,7 +16,7 @@ const loadModel = async () => {
       });
     
     await tf
-      .loadLayersModel( "http://localhost:5500/public/sketch_feature_classifier/model.json")
+      .loadLayersModel( "http://192.168.1.116:5500/public/sketch_feature_classifier/model.json")
       .then((result) => {
         sketchFeatureClassifier = result;
       })
@@ -31,14 +27,7 @@ const loadModel = async () => {
     return soundSketchClassifier && sketchFeatureClassifier ? true : false;
 };
 
-// Get bounding box of sketch, cut sketch from canvas and rescale to fit cnn input
-const extractSketch = (canvas, x, y, l, h) => {
-  // console.log(canvas);
-  return canvas.drawingContext.getImageData( x, y, l, h)
-
-};
-
-const preprocessSketch = (imgData, returnCanvas = undefined, invert = false) => {
+const preprocessSketch = (imgData:ImageData, returnCanvas:HTMLCanvasElement|null = null, invert = false) => {
   return tf.tidy(() => {
     //convert the image data to a tensor
     let tensor = tf.browser.fromPixels(imgData, 1);
@@ -70,28 +59,26 @@ const preprocessSketch = (imgData, returnCanvas = undefined, invert = false) => 
 
     //resize to 28 x 28
     const resized = tf.image.resizeBilinear(tensor, [28, 28]).toFloat();
-
     // Normalize the image
-    let normalized = resized.div(255.0);
+    let normalized = resized.div(255.0) as tf.Tensor3D;
     // Invert colours, so background is black (0) and strokes white (1)
     if (invert) normalized = tf.scalar(1.0).sub(normalized);
     // Only allow 0 and 1, faded colours are counted as 1 until they fully disappeared
     normalized = normalized.ceil();
-    //We add a dimension to get a batch shape
-    const batched = normalized.expandDims(0);
-
     // Display extracted, processed image on prediction panel canvas
     if (returnCanvas) {
-      returnCanvas.width = normalized.shape.width;
-      returnCanvas.height = normalized.shape.height;
+      const [width, height] = normalized.shape;
+      returnCanvas.width = width;
+      returnCanvas.height = height;
       tf.browser.toPixels(normalized, returnCanvas);
     }
-
+      //We add a dimension to get a batch shape
+    const batched = normalized.expandDims(0);
     return batched;
   });
 };
 
-const calculateBoundingBox = (strokes) => {
+const calculateBoundingBox = (strokes:Array<Stroke>|Array<StrokeSlice>) => {
   let [xMin, yMin, xMax, yMax] = [10000000, 10000000, 0, 0];
   strokes.forEach((stroke)=> {
       stroke.x.forEach((x) => {
@@ -114,11 +101,12 @@ const calculateBoundingBox = (strokes) => {
   return [xMin,yMin,xMax-xMin,yMax-yMax]
 }
 
-const rescale = (c,offset,scale) => (c-offset)*scale;
+const rescale = (c:number,offset:number,scale:number) => (c-offset)*scale;
 
-const createSketchImage = (strokes,x,y,l,h,dimX=28,dimY=28) => {
+const createSketchImage = (strokes:Array<Stroke>|Array<StrokeSlice>,x:number,y:number,l:number,h:number,dimX=28,dimY=28) => {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
+  if (!ctx) return null;
   // Black background
   ctx.fillRect(0,0,dimX,dimY);
   
@@ -149,8 +137,8 @@ const createSketchImage = (strokes,x,y,l,h,dimX=28,dimY=28) => {
 }
 
 // Make prediction for sound sketch classifier (noisy/calm, thin/thick)
-const makeSoundSketchPrediction = async (preprocessed) => {
-  const [out1, out2] = soundSketchClassifier.predict(preprocessed);
+const makeSoundSketchPrediction = async (preprocessed:tf.Tensor<tf.Rank>) => {
+  const [out1, out2] = soundSketchClassifier.predict(preprocessed) as tf.Tensor[];
   const noisyCalm = await out1.data();
   const thinThick = await out2.data(); 
   return [noisyCalm[0],thinThick[0]];
@@ -159,19 +147,21 @@ const makeSoundSketchPrediction = async (preprocessed) => {
 // Make prediction for sketch feature classifier (acute angle, curve, obtuse angle, straight line)
 
 const featureNames = ["Line","Curve","Acute","Obtuse"]
-const makeSketchFeaturePrediction = async (preprocessed) => {
-  const out = sketchFeatureClassifier.predict(preprocessed);
-  const data = await out.data();
+const makeSketchFeaturePrediction = async (preprocessed:tf.Tensor<tf.Rank>) => {
+  const out = sketchFeatureClassifier.predict(preprocessed) as tf.Tensor;
+  const data = Array.from(await out.data());
   // Get index with highest value
-  const prediction = data.reduce((prediction,current,i)=>current>prediction[0]?[current,featureNames[i]]:prediction,[0,-1])
-  return prediction
+  const prediction = data.reduce((prediction,current:number,i:number)=>(
+    current>prediction.probability?
+    {"probability":current,"category":featureNames[i]}:
+    prediction),{"probability":0,"category":"None"})
+  return prediction as Feature;
 }
 
 export {
   loadModel,
   makeSoundSketchPrediction,
   makeSketchFeaturePrediction,
-  extractSketch,
   createSketchImage,
   preprocessSketch,
   calculateBoundingBox,
