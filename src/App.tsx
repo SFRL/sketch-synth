@@ -1,14 +1,30 @@
 import React, { useState, useEffect, useRef } from "react";
 import SketchSynthInterface from "./SketchSynthInterface";
 import { CookiesProvider, useCookies } from "react-cookie";
+import { ExperimentSynth } from "./scripts/wavetableSynth";
 
 import "./css/body.css";
 import "./css/welcomescreen.css";
 
 import { loadModel } from "./scripts/tensorflowModel";
 
+const setupSynth = async () => {
+      const synthResources = await ExperimentSynth.loadResources(
+      "waveshaper_grid.npy",
+      "audio/ir.wav"
+    );
+    const synth = new ExperimentSynth(
+      synthResources.lookupTable,
+      synthResources.impulseResponse
+    );
+    await synth.initialiseSynth();
+    return synth;
+    }
+
 const App = () => {
   const [loaded, setLoaded] = useState(false);
+  const [loadSynth, setLoadSynth] = useState(false);
+  const [synth, setSynth] = useState<ExperimentSynth | null>(null);
   const [started, setStarted] = useState(false);
   
   // Get the ip of the OSC receiver from user input
@@ -17,6 +33,7 @@ const App = () => {
   const [ipCookie, setIpCookie] = useCookies(['hostIp']);
   const [https,setHttps] = useState(window.location.protocol === "https:");
   const [oscHost, setOscHost] = useState(ipCookie.hostIp || "localhost");
+  
 
   // Get descriptors from server and generate study pages
   // Then Submit metadata when app is mounted
@@ -33,18 +50,30 @@ const App = () => {
     }
   }, [loaded, setLoaded]);
 
-  useEffect(()=>{
-    console.log(https);
-    console.log(window.location.protocol);   
-    console.log(oscHost)
-  })
+  useEffect(() => {
+    if (loadSynth) {
+      setupSynth().then((synth) => {
+        setSynth(synth)
+        setStarted(true);
+      })
+    }
+    setLoadSynth(false);
+  },[loadSynth,synth,setSynth,setStarted]);
+
+
 
   const startInterface = () => {
     const ip = ipInputRef.current?.value || "localhost";
     setIpCookie('hostIp', ip, {path: '/'});
     setOscHost(ip);
-    setStarted(true);
+    setLoadSynth(true);
   }
+
+    useEffect(()=>{
+    console.log(https);
+    console.log(window.location.protocol);   
+    console.log(oscHost)
+  })
 
   const welcomeScreen = (
     <section className="welcome">
@@ -96,7 +125,7 @@ const App = () => {
         {!loaded ? (
           <p>SketchSynth is loading...</p>
         ) : (
-          <button onClick={startInterface}>Start</button>
+          <button onClick={startInterface}>{loadSynth?"Wait for synth to load":"Start"}</button>
         )}
       </div>
     </section>
@@ -108,6 +137,7 @@ const App = () => {
   ) : (
     <SketchSynthInterface
       instructions={""}
+      synth={synth}
       oscHost={oscHost}
       https={https}
     />

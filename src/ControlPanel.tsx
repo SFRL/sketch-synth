@@ -3,6 +3,7 @@ import OSC from "osc-js";
 import { HighlightOff, InfoRounded } from "@material-ui/icons";
 import { Sketch, FeatureColours } from "./scripts/sketchClasses";
 import {analyseSketch,defaultSketchAnalysis} from "./scripts/analyseSketch";
+import { ExperimentSynth } from "./scripts/wavetableSynth";
 import "./css/controlpanel.css";
 
 
@@ -33,6 +34,15 @@ const getOSCstatus = (statusID:number) => {
   }
 }
 
+const toggleSynth = (synth:ExperimentSynth,isPlaying:boolean,setStatus:Function) => {
+  if (isPlaying) synth.noteOff();
+  else {
+    synth.setParams(0.5,0.5)
+    synth.noteOn(41)
+  };
+  setStatus(!isPlaying);
+}
+
 type SketchAnalysis = typeof defaultSketchAnalysis;
 type featureType = keyof SketchAnalysis;
 const featureNames = Object.keys(defaultSketchAnalysis)
@@ -42,12 +52,13 @@ const getFeatureDisplay = (feature:featureType,analysis:SketchAnalysis) => {
   else return <span key={feature}>{feature}: {`${analysis[feature].toFixed(3)}`}</span>
 }
 
-
-const ControlPanel = ({sketch, osc,toggleShowFeatures}:{sketch:Sketch,osc:OSC,toggleShowFeatures:Function}) => {
+const ControlPanel = ({sketch, osc,toggleShowFeatures,synth}:{sketch:Sketch,osc:OSC,toggleShowFeatures:Function,synth:ExperimentSynth}) => {
   // Object storing latest analysis of sketch (feature extraction)
   const [analysis, setAnalysis] = useState<SketchAnalysis>(defaultSketchAnalysis);
   // Display GUI for control panel
   const [displayPanel, setDisplayPanel] = useState(true);
+  const [isPlaying, setIsPlaying] = useState(false);
+
   const processedImage = useRef<HTMLCanvasElement>(null);
   const processedSlice = useRef<HTMLCanvasElement>(null);
   
@@ -77,6 +88,9 @@ const ControlPanel = ({sketch, osc,toggleShowFeatures}:{sketch:Sketch,osc:OSC,to
   }, [sketch, analysis, osc, setAnalysis]);
 
 
+
+
+
   const content = displayPanel ? (
     <div className="control-panel expanded">
       <HighlightOff onClick={() => setDisplayPanel(false)} />
@@ -97,6 +111,7 @@ const ControlPanel = ({sketch, osc,toggleShowFeatures}:{sketch:Sketch,osc:OSC,to
       <div className="feature-display">
         {Object.keys(analysis).map((feature) => getFeatureDisplay(feature as featureType,analysis))}
         <button onClick={()=>toggleShowFeatures()}>Toggle Features</button>
+        <button onClick={()=>toggleSynth(synth,isPlaying,setIsPlaying)}>{isPlaying?"Stop":"Play"}</button>
         {getOSCstatus(osc.status())}
       </div>
       <div>

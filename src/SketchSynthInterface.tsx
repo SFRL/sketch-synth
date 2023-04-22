@@ -4,16 +4,20 @@ import OSC from "osc-js";
 import P5Sketch from "./P5Sketch";
 import ControlPanel from "./ControlPanel";
 import { Sketch } from "./scripts/sketchClasses";
+import { ExperimentSynth } from "./scripts/wavetableSynth";
 import "./css/layout.css";
 import "./css/button.css";
 
-const SketchSynthInterface = ({oscHost, https, instructions}:{oscHost:string, https:boolean, instructions:string}) => {
+
+
+const SketchSynthInterface = ({oscHost, https, instructions,synth}:{oscHost:string, https:boolean, instructions:string, synth:ExperimentSynth}) => {
   // State that is mainly used to force p5 sketch to rerender if participant clicks reset or changes screen size,
   // but it also tracks how often a reset happened
   const [reset, setReset] = useState(0);
     // State whether sketch featured are visualised or not
   const [showFeatures, setShowFeatures] = useState(false);
   const toggleShowFeatures = useCallback(() => setShowFeatures(!showFeatures), [showFeatures, setShowFeatures]);
+
   // Initialise sketch object (height and width will be set to true value in the setup function inside DrawingInterface)
   const [sketch] = useState(new Sketch());
   const [osc] = useState(new OSC());
@@ -35,6 +39,7 @@ const SketchSynthInterface = ({oscHost, https, instructions}:{oscHost:string, ht
         sketch={sketch}
         osc={osc}
         toggleShowFeatures={toggleShowFeatures}
+        synth={synth}
       />
       <P5Sketch
         sketch={sketch}
