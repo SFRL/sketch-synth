@@ -43,7 +43,7 @@ const getFeatureDisplay = (feature:featureType,analysis:SketchAnalysis) => {
 }
 
 
-const ControlPanel = ({sketch, osc}:{sketch:Sketch,osc:OSC}) => {
+const ControlPanel = ({sketch, osc,toggleShowFeatures}:{sketch:Sketch,osc:OSC,toggleShowFeatures:Function}) => {
   // Object storing latest analysis of sketch (feature extraction)
   const [analysis, setAnalysis] = useState<SketchAnalysis>(defaultSketchAnalysis);
   // Display GUI for control panel
@@ -96,6 +96,7 @@ const ControlPanel = ({sketch, osc}:{sketch:Sketch,osc:OSC}) => {
 
       <div className="feature-display">
         {Object.keys(analysis).map((feature) => getFeatureDisplay(feature as featureType,analysis))}
+        <button onClick={()=>toggleShowFeatures()}>Toggle Features</button>
         {getOSCstatus(osc.status())}
       </div>
       <div>

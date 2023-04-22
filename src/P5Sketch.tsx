@@ -53,7 +53,7 @@ const setup = (p:p5, canvasParent:HTMLDivElement, sketch:Sketch) => {
   console.log("p5 sketch loaded");
 };
 
-const draw = (p:p5,sketch:Sketch,setFade:Function) => {
+const draw = (p:p5,sketch:Sketch,setFade:Function,showFeatures:boolean) => {
   // Clear background
   p.background(sketch.blendColour);
   if (currentStroke.length === 0) setFade(false);
@@ -88,12 +88,12 @@ const draw = (p:p5,sketch:Sketch,setFade:Function) => {
   sketch.updateTotalStrokeLength();
 
   // Draw sketch
-  sketch.drawSketch(p, p.millis(),false);
+  sketch.drawSketch(p, p.millis(),showFeatures);
 };
 
 // ------------------- REACT COMPONENT ------------------------------
 
-function P5Sketch({sketch, instructions} : {sketch: Sketch, instructions: string}) {
+function P5Sketch({sketch, instructions, showFeatures} : {sketch: Sketch, instructions: string, showFeatures: boolean}) {
   // Reference to instructions and parent DOM
   const instructionsRef = useRef<HTMLDivElement>(null);
   const canvasParentRef = useRef<HTMLDivElement>(null);
@@ -111,7 +111,7 @@ function P5Sketch({sketch, instructions} : {sketch: Sketch, instructions: string
         if (canvasParent) setup(p,canvasParent,sketch);
         else console.log("Error: canvasParent not defined");
       };
-      p.draw = () => draw(p,sketch,setFade);
+      p.draw = () => draw(p,sketch,setFade,showFeatures);
     });
 
     // Remove p5 sketch and clean up event listeners
@@ -124,7 +124,7 @@ function P5Sketch({sketch, instructions} : {sketch: Sketch, instructions: string
       canvasParent?.removeEventListener("mouseup", startTracking);
       canvasParent?.removeEventListener("mousedown", endTracking);
     };
-  }, [sketch, setFade]);
+  }, [sketch, showFeatures, setFade]);
 
   // Fade out instructions when user starts drawing
   useEffect(() => {

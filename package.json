@@ -15,6 +15,8 @@
     "@types/p5": "^1.6.1",
     "firebase": "^9.0.1",
     "lodash": "^4.17.21",
+    "ndarray": "^1.0.19",
+    "npyjs": "^0.4.0",
     "osc-js": "^2.4.0",
     "p5": "^1.4.0",
     "pdf-viewer-reactjs": "^2.2.3",

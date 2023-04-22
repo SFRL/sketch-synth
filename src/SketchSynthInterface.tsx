@@ -1,4 +1,4 @@
-import { useState, useEffect} from "react";
+import { useState, useEffect, useCallback} from "react";
 import { debounce } from "lodash";
 import OSC from "osc-js";
 import P5Sketch from "./P5Sketch";
@@ -11,6 +11,9 @@ const SketchSynthInterface = ({oscHost, https, instructions}:{oscHost:string, ht
   // State that is mainly used to force p5 sketch to rerender if participant clicks reset or changes screen size,
   // but it also tracks how often a reset happened
   const [reset, setReset] = useState(0);
+    // State whether sketch featured are visualised or not
+  const [showFeatures, setShowFeatures] = useState(false);
+  const toggleShowFeatures = useCallback(() => setShowFeatures(!showFeatures), [showFeatures, setShowFeatures]);
   // Initialise sketch object (height and width will be set to true value in the setup function inside DrawingInterface)
   const [sketch] = useState(new Sketch());
   const [osc] = useState(new OSC());
@@ -31,10 +34,12 @@ const SketchSynthInterface = ({oscHost, https, instructions}:{oscHost:string, ht
       <ControlPanel 
         sketch={sketch}
         osc={osc}
+        toggleShowFeatures={toggleShowFeatures}
       />
       <P5Sketch
         sketch={sketch}
         instructions={`Draw a ${instructions} sound`}
+        showFeatures={showFeatures}
       />
     </>
   );
