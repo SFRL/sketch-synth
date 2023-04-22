@@ -78,29 +78,6 @@ const preprocessSketch = (imgData:ImageData, returnCanvas:HTMLCanvasElement|null
   });
 };
 
-const calculateBoundingBox = (strokes:Array<Stroke>|Array<StrokeSlice>) => {
-  let [xMin, yMin, xMax, yMax] = [10000000, 10000000, 0, 0];
-  strokes.forEach((stroke)=> {
-      stroke.x.forEach((x) => {
-      if (x<xMin) {
-        xMin = x
-      }
-      else if (x>xMax) {
-        xMax = x
-      }
-      });
-      stroke.y.forEach((y) => {
-        if (y < yMin) {
-          yMin = y;
-        } else if (y > yMax) {
-          yMax = y;
-        }
-      });
-  })
-  
-  return [xMin,yMin,xMax-xMin,yMax-yMax]
-}
-
 const rescale = (c:number,offset:number,scale:number) => (c-offset)*scale;
 
 const createSketchImage = (strokes:Array<Stroke>|Array<StrokeSlice>,x:number,y:number,l:number,h:number,dimX=28,dimY=28) => {
@@ -164,5 +141,4 @@ export {
   makeSketchFeaturePrediction,
   createSketchImage,
   preprocessSketch,
-  calculateBoundingBox,
 };

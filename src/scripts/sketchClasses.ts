@@ -236,13 +236,14 @@ class Sketch{
   }
 
   // Bounding box of sketch in format [x,y,w,h] (x/y position of top left corner and width and height of box)
-  getBoundingBox() {
+  getBoundingBox(strokes:Array<Stroke>|Array<StrokeSlice>|false=false) {
     // Get bounding box dimensions of sketch
     let maxX = 0;
     let maxY = 0;
     let minX = this.width;
     let minY = this.height;
-    this.strokes.forEach((stroke) => {
+    const strokeArray = strokes || this.strokes;
+    strokeArray.forEach((stroke) => {
       maxX = Math.max(maxX, Math.max(...stroke.x));
       maxY = Math.max(maxY, Math.max(...stroke.y));
       minX = Math.min(minX, Math.min(...stroke.x));

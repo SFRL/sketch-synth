@@ -3,10 +3,8 @@ import {
   preprocessSketch,
   makeSoundSketchPrediction,
   makeSketchFeaturePrediction,
-  calculateBoundingBox
 } from "./tensorflowModel";
-
-import { Sketch} from "./sketchClasses";
+import {Sketch} from "./sketchClasses";
 
 // Default sketch analysis, representing an empty canvas
 const defaultSketchAnalysis = {
@@ -32,7 +30,7 @@ const defaultSketchAnalysis = {
 const sketchFeatureAnalysis = async (sketch:Sketch,canvas:HTMLCanvasElement|null,n=15) => {
     const currentSlice = sketch.getCurrentSlice(n)
     if (currentSlice.x.length===0) return {"probability":0,"category":"None"};
-    const [xSlice, ySlice, lSlice, hSlice] = calculateBoundingBox([currentSlice]);
+    const [xSlice, ySlice, lSlice, hSlice] = sketch.getBoundingBox([currentSlice]);
     const tempCanvas = createSketchImage(
         [currentSlice],
         xSlice,
