@@ -6,6 +6,9 @@ import {analyseSketch,defaultSketchAnalysis} from "./scripts/analyseSketch";
 import { ExperimentSynth } from "./scripts/wavetableSynth";
 import "./css/controlpanel.css";
 
+type SketchAnalysis = typeof defaultSketchAnalysis;
+type featureType = keyof SketchAnalysis;
+const featureNames = Object.keys(defaultSketchAnalysis)
 
 const getOSCstatus = (statusID:number) => {
   switch(statusID) {
@@ -34,18 +37,20 @@ const getOSCstatus = (statusID:number) => {
   }
 }
 
-const toggleSynth = (synth:ExperimentSynth,isPlaying:boolean,setStatus:Function) => {
-  if (isPlaying) synth.noteOff();
+
+const mapToWebSynth = (analysis:SketchAnalysis,synth:ExperimentSynth) => {
+  if (analysis.length > 0) {
+    const x = Math.min(analysis.thin,0.999999);
+    const y = Math.min(analysis.noisy,0.999999);
+    synth.setParams(x,y);
+    synth.noteOn(41);
+  }
   else {
-    synth.setParams(0.5,0.5)
-    synth.noteOn(41)
-  };
-  setStatus(!isPlaying);
+    synth.noteOff();
+  }
 }
 
-type SketchAnalysis = typeof defaultSketchAnalysis;
-type featureType = keyof SketchAnalysis;
-const featureNames = Object.keys(defaultSketchAnalysis)
+
 
 const getFeatureDisplay = (feature:featureType,analysis:SketchAnalysis) => {
   if (feature === "feature" || feature === "strokes" || feature === "length") return <span key={feature}>{feature}: {analysis[feature]}</span>
@@ -71,6 +76,8 @@ const ControlPanel = ({sketch, osc,toggleShowFeatures,synth}:{sketch:Sketch,osc:
       )
         .then((analysis) => {
           setAnalysis(analysis)
+
+          mapToWebSynth(analysis,synth);
           
           // Send data via Websocket OSC
           if (osc.status()===1) {
@@ -85,7 +92,7 @@ const ControlPanel = ({sketch, osc,toggleShowFeatures,synth}:{sketch:Sketch,osc:
       setTimeout(()=>{
         getPrediction();
       },100);
-  }, [sketch, analysis, osc, setAnalysis]);
+  }, [sketch, analysis, osc, setAnalysis, synth]);
 
 
 
@@ -111,7 +118,7 @@ const ControlPanel = ({sketch, osc,toggleShowFeatures,synth}:{sketch:Sketch,osc:
       <div className="feature-display">
         {Object.keys(analysis).map((feature) => getFeatureDisplay(feature as featureType,analysis))}
         <button onClick={()=>toggleShowFeatures()}>Toggle Features</button>
-        <button onClick={()=>toggleSynth(synth,isPlaying,setIsPlaying)}>{isPlaying?"Stop":"Play"}</button>
+        {/* <button onClick={()=>toggleSynth(synth,isPlaying,setIsPlaying)}>{isPlaying?"Stop":"Play"}</button> */}
         {getOSCstatus(osc.status())}
       </div>
       <div>

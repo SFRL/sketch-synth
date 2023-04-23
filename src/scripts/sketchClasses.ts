@@ -63,7 +63,7 @@ class Stroke {
   updateFeatureCategory(feature:Feature,index:number) {
       const newProbability = feature.probability;
       // Retrieve entry for index 
-      const probability = this.featureCategory[index]["probability"];
+      const probability = this.featureCategory[index]?.probability;
       // Update entry if new probability is higher
       if (newProbability > probability) {
         this.featureCategory[index] = feature;
@@ -156,7 +156,7 @@ class Sketch{
   lineWidth: number;
   decay: number;
   
-  constructor( w=0, h=0, t=0, canvas=null, lineColour:[number,number,number]=[0,0,0], blendColour:[number,number,number]=[255,255,255], featureColours=defaultFeatureColours, lineWidth=6, decay=0.0001) {
+  constructor( w=0, h=0, t=0, canvas=null, lineColour:[number,number,number]=[0,0,0], blendColour:[number,number,number]=[255,255,255], featureColours=defaultFeatureColours, lineWidth=6, decay=0.0004) {
     //Array to hold strokes
     this.strokes = [];
     // Canvas Element

@@ -150,19 +150,19 @@ class ExperimentSynth extends LookupTableSynth {
     super.setParam("x", x);
     super.setParam("y", y);
 
-    const { modGain, modFreq, filterCutoff } = ExperimentSynth.getParams(x, y);
-    this.modulationGain.gain.linearRampToValueAtTime(
-      modGain,
-      this.context.currentTime + 0.1
-    );
-    this.modulator.frequency.linearRampToValueAtTime(
-      150 + modFreq * 450.0,
-      this.context.currentTime + 0.1
-    );
-    this.filterA.frequency.linearRampToValueAtTime(
-      Math.pow(filterCutoff, 1.5) * 8000 + 100,
-      this.context.currentTime + 0.1
-    );
+    // const { modGain, modFreq, filterCutoff } = ExperimentSynth.getParams(x, y);
+    // this.modulationGain.gain.linearRampToValueAtTime(
+    //   modGain,
+    //   this.context.currentTime + 0.1
+    // );
+    // this.modulator.frequency.linearRampToValueAtTime(
+    //   150 + modFreq * 450.0,
+    //   this.context.currentTime + 0.1
+    // );
+    // this.filterA.frequency.linearRampToValueAtTime(
+    //   Math.pow(filterCutoff, 1.5) * 8000 + 100,
+    //   this.context.currentTime + 0.1
+    // );
   }
 
   async initialiseSynth() {

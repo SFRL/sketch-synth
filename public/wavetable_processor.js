@@ -15,6 +15,7 @@ class WavetableProcessor extends AudioWorkletProcessor {
       Math.floor(phase) * this.wavetable.stride[0] +
       Math.floor(x) * this.wavetable.stride[1] +
       Math.floor(y) * this.wavetable.stride[2];
+      
     return this.wavetable.data[index];
   }
 

@@ -10,7 +10,7 @@ import { loadModel } from "./scripts/tensorflowModel";
 
 const setupSynth = async () => {
       const synthResources = await ExperimentSynth.loadResources(
-      "waveshaper_grid.npy",
+      "sketchsynth_wavegrid.npy",
       "audio/ir.wav"
     );
     const synth = new ExperimentSynth(
