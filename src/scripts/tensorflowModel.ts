@@ -7,7 +7,7 @@ let sketchFeatureClassifier : tf.LayersModel;
 
 const loadModel = async () => {
     await tf
-      .loadLayersModel("http://192.168.1.116:5500/public/sound_sketch_classifier/model.json")
+      .loadLayersModel("http://localhost:5500/public/sound_sketch_classifier/model.json")
       .then((result) => {
         soundSketchClassifier = result;
       })
@@ -16,7 +16,7 @@ const loadModel = async () => {
       });
     
     await tf
-      .loadLayersModel( "http://192.168.1.116:5500/public/sketch_feature_classifier/model.json")
+      .loadLayersModel( "http://localhost:5500/public/sketch_feature_classifier/model.json")
       .then((result) => {
         sketchFeatureClassifier = result;
       })
